@@ -28,16 +28,14 @@ open class HttpProxyAutoConfiguration {
 
     private val configurers = ArrayList<HttpProxyConfigurer>()
 
-    @Autowired
+    @Autowired(required = false)
     private val properties: HttpProxyProperties? = null
 
     private var proxyServer: BrowserMobProxy? = null
 
     @PreDestroy
     fun close() {
-        if (this.proxyServer != null) {
-            this.proxyServer!!.stop()
-        }
+        proxyServer?.stop()
     }
 
     @Autowired(required = false)
@@ -53,32 +51,40 @@ open class HttpProxyAutoConfiguration {
     @Throws(UnknownHostException::class)
     open fun proxy(): BrowserMobProxy? {
 
-        logger.error(properties?.toString())
+        if(chackProxyProperties()) {
 
-        val cert = File(properties?.x509Path);
-        val pem = File(properties?.pemPath);
+            logger.error(properties?.toString())
 
-        //然后将证书加载到
-        val existingCertificateSource = PemFileCertificateSource(cert, pem, properties?.password);
+            val cert = File(properties?.x509Path);
+            val pem = File(properties?.pemPath);
 
-        val mitmManager = ImpersonatingMitmManager.builder()
-                .rootCertificateSource(existingCertificateSource)
-                .build();
+            //然后将证书加载到
+            val existingCertificateSource = PemFileCertificateSource(cert, pem, properties?.password);
 
-
-        this.proxyServer = BrowserMobProxyServer(properties!!.port);
-        proxyServer?.setMitmManager(mitmManager)
+            val mitmManager = ImpersonatingMitmManager.builder()
+                    .rootCertificateSource(existingCertificateSource)
+                    .build();
 
 
-        for (configurer in this.configurers) {
-            configurer.onConfiguration(this.proxyServer!!)
+            this.proxyServer = BrowserMobProxyServer(properties?.port!!);
+            proxyServer?.setMitmManager(mitmManager)
+
+
+            for (configurer in this.configurers) {
+                configurer.onConfiguration(this.proxyServer)
+            }
         }
-
-        proxyServer?.start()
 
         return this.proxyServer
     }
 
+    fun chackProxyProperties():Boolean{
+        if(properties != null){
+            return (properties.x509Path != null && properties.pemPath != null && properties.password!= null)
+        }
+
+        return  false
+    }
 
     companion object {
 

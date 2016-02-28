@@ -9,5 +9,5 @@ interface HttpProxyConfigurer {
     /**
      * 启动代理前的回调
      */
-    fun onConfiguration(proxy: BrowserMobProxy)
+    fun onConfiguration(proxy: BrowserMobProxy?)
 }

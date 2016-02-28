@@ -1,68 +1,81 @@
 buildscript {
-	ext {
-		springBootVersion = '1.3.2.RELEASE'
-		kotlinVersion = '1.0.0'
-	}
-	repositories {
-		//mavenCentral()
-		maven{ url 'http://maven.oschina.net/content/groups/public/'}
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") 
-		classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-		classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
-	}
+    ext {
+        springBootVersion = '1.3.2.RELEASE'
+        kotlinVersion = '1.0.0'
+    }
+    repositories {
+        maven {
+            url 'http://maven.oschina.net/content/groups/public/'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+        classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
+    }
 }
 
 apply plugin: 'kotlin'
 apply plugin: 'eclipse'
-apply plugin: 'spring-boot' 
+apply plugin: 'spring-boot'
 
 jar {
-	baseName = 'services'
-	version = '0.0.1-SNAPSHOT'
+    baseName = 'services'
+    version = '0.0.1-SNAPSHOT'
 }
+
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 repositories {
-	//mavenCentral()
-	maven{ url 'http://maven.oschina.net/content/groups/public/'}
+
+    maven {
+        url 'http://maven.oschina.net/content/groups/public/'
+    }
+    mavenCentral()
 }
 
 configure(allprojects) {
-	apply plugin: 'propdeps'
-	apply plugin: 'propdeps-maven'
-	apply plugin: 'propdeps-idea'
-	apply plugin: 'propdeps-eclipse'
+    apply plugin: 'propdeps'
+    apply plugin: 'propdeps-maven'
+    apply plugin: 'propdeps-idea'
+    apply plugin: 'propdeps-eclipse'
 }
 
+
+
 dependencies {
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
 
-	compile('org.springframework.boot:spring-boot-starter-actuator')
-	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('org.springframework.boot:spring-boot-starter-websocket')
-	compile("org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}")
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.boot:spring-boot-starter-websocket'
 
-	compile 'com.squareup.okhttp3:okhttp:3.1.2'
-	compile 'com.google.code.gson:gson:2.6.1'
-	compile 'net.lightbody.bmp:browsermob-core-littleproxy:2.1.0-beta-4'
-	compile 'org.seleniumhq.selenium:selenium-api:2.52.0'
+    compile 'org.springframework.boot:spring-boot-starter-redis'
 
-	optional "org.springframework.boot:spring-boot-configuration-processor"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
+
+    compile 'com.squareup.okhttp3:okhttp:3.1.2'
+    compile 'com.google.code.gson:gson:2.6.1'
+    compile 'net.lightbody.bmp:browsermob-core-littleproxy:2.1.0-beta-4'
+    compile 'org.seleniumhq.selenium:selenium-api:2.52.0'
+
+    optional 'org.springframework.boot:spring-boot-configuration-processor'
+
 }
 
 compileJava.dependsOn(processResources)
 
 springBoot {
-	mainClass = "com.zzzmode.platfrom.AppPlatfromServiceApplicationKt"
+    mainClass = "com.zzzmode.platfrom.AppPlatfromServiceApplicationKt"
 }
 
 eclipse {
-	classpath {
-		 containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
-		 containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7'
-	}
+    classpath {
+        containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+        containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7'
+    }
 }
+
 
