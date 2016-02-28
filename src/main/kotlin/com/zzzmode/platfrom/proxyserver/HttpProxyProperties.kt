@@ -13,9 +13,7 @@ open  class HttpProxyProperties(
         var password: String? = null
 ) {
 
-
-    public
-
+    
     override fun toString(): String {
         return "NettyHttpProxy(port=$port, x509Path=$x509Path, pemPath=$pemPath, password=$password)"
     }
