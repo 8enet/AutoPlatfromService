@@ -40,4 +40,16 @@ class VirtualUser (var id: Int){
      */
     var port:Int=8090
 
+    /**
+     * 用户名
+     */
+    var userName:String?=null
+
+    /**
+     * 密码
+     */
+    var userPwd:String?=null
+
+
+
 }

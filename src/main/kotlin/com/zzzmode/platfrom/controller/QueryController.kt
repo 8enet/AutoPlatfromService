@@ -3,13 +3,10 @@ package com.zzzmode.platfrom.controller
 import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
 import com.zzzmode.platfrom.exception.PlatfromServiceException
-import com.zzzmode.platfrom.services.IPAddressService
-import com.zzzmode.platfrom.services.MobileNumberAddressService
+import com.zzzmode.platfrom.services.ToolsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.ComponentScan
-import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.servlet.support.RequestContext
 import javax.servlet.http.HttpServletRequest
 
 /**
@@ -21,10 +18,8 @@ import javax.servlet.http.HttpServletRequest
 class QueryController :BaseController(){
 
     @Autowired
-    var mobileNumberAddressServices: MobileNumberAddressService?=null
+    var toolsService: ToolsService?=null
 
-    @Autowired
-    var ipAddressService:IPAddressService?=null
 
 
     /**
@@ -33,9 +28,9 @@ class QueryController :BaseController(){
     @RequestMapping(params = arrayOf("phone"))
     @Throws(PlatfromServiceException::class)
     fun viewPhone(@RequestParam phone: String): MobileNumberAddress? {
-        if (mobileNumberAddressServices?.isPhoneNumber(phone)!!) {
+        if (toolsService?.isPhoneNumber(phone)!!) {
 
-            mobileNumberAddressServices?.queryAddress(phone)?.apply {
+            toolsService?.getMobileAddress(phone)?.apply {
                 return this;
             }
         }
@@ -55,8 +50,8 @@ class QueryController :BaseController(){
         if("".equals(cip)){
             cip=request.remoteHost
         }
-        if(ipAddressService?.isIpAddress(cip)!!){
-            ipAddressService?.getIpInfo(cip)?.apply {
+        if(toolsService?.isIpAddress(cip)!!){
+            toolsService?.getIpInfo(cip)?.apply {
                 return this
             }
         }else{

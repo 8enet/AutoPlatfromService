@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.ResponseBody
 
 import java.util.Arrays
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by zl on 16/2/17.
@@ -51,6 +52,12 @@ open class Yma0SMSPlatfromService {
             }
         }
         return token
+    }
+
+    fun getMobileNum():String{
+        TimeUnit.SECONDS.sleep(8)
+
+        return "13125144683"
     }
 
 

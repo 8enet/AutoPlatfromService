@@ -3,7 +3,9 @@ package com.zzzmode.platfrom.services
 import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.util.Utils
 import com.zzzmode.platfrom.util.generateUserId
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
@@ -13,6 +15,12 @@ import kotlin.concurrent.thread
  */
 @Service
 open class UserService {
+
+    @Autowired
+    val smsPlatfromService : Yma0SMSPlatfromService?=null
+
+    @Autowired
+    val toolsService : ToolsService?=null
 
     //在线用户
     private val onlineUsers= ConcurrentHashMap<Int, VirtualUser>()
@@ -67,6 +75,17 @@ open class UserService {
 
     private fun newUser():VirtualUser{
         val user=VirtualUser(Utils.generateUserId())
+        //1.获取手机号
+        user.phone=smsPlatfromService?.getMobileNum()
+        //2.根据手机号获取区域ip
+        toolsService?.getMobileAddress(user.phone!!)?.apply {
+            user.province=this.province
+            user.city=this.city
+
+            user.proxy= InetSocketAddress("127.0.0.1",8888)
+        }
+
+
 
         return user
     }
