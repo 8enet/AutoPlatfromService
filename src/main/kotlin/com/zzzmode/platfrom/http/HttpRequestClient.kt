@@ -12,10 +12,13 @@ import org.springframework.util.SocketUtils
 
 import java.io.IOException
 import java.lang.ref.SoftReference
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.Arrays
 import java.util.concurrent.BrokenBarrierException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
@@ -23,29 +26,37 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  * Created by zl on 16/2/16.
  */
 object HttpRequestClient {
+    val client : OkHttpClient;
+
+    init {
+        client = OkHttpClient.Builder()
+                .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1",8888)))
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .build()
+    }
 
     private val logger = LoggerFactory.getLogger(HttpRequestClient::class.java)
 
 
-    val client = OkHttpClient()
 
 
     fun request(request: Request): String? {
 
         val wapper = ObjectWapper<String?>()
-
         val callback = object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                wapper.value=null
                 end()
             }
 
             @Throws(IOException::class)
             override fun onResponse(call: Call, response: Response) {
 
-                 response.body()?.string()?.apply {
-                     wapper.value = this
+                if(response.isSuccessful) {
+                    response.body()?.string()?.apply {
+                        wapper.value = this
+                    }
                 }
-
                 end()
             }
 

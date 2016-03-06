@@ -21,7 +21,7 @@ open class MobileNumberAddressServices {
     @Value("\${mobile_number_address_api}")
     val apiServer: String ? = null
 
-    fun queryAddress(phone: String): MobileNumberAddress? {
+    open  fun queryAddress(phone: String): MobileNumberAddress? {
         if (apikey == null) {
             throw RuntimeException("apikey may be not null !!!")
         }

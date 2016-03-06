@@ -1,6 +1,8 @@
 package com.zzzmode.platfrom.proxyserver
 
 import com.zzzmode.platfrom.bean.HttpProxyProperties
+import com.zzzmode.platfrom.util.FileUtils
+import com.zzzmode.platfrom.util.getFile
 import net.lightbody.bmp.BrowserMobProxy
 import net.lightbody.bmp.BrowserMobProxyServer
 import net.lightbody.bmp.mitm.PemFileCertificateSource
@@ -13,7 +15,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.util.CollectionUtils
-import java.io.File
 import java.net.UnknownHostException
 import java.util.*
 import javax.annotation.PreDestroy
@@ -50,13 +51,12 @@ open class HttpProxyAutoConfiguration {
     @ConditionalOnMissingBean
     @Throws(UnknownHostException::class)
     open fun proxy(): BrowserMobProxy? {
+        val cert = FileUtils.getFile(properties?.x509Path);
+        val pem = FileUtils.getFile(properties?.pemPath);
 
-        if(chackProxyProperties()) {
+        if(cert != null && pem != null && properties?.password != null) {
 
             logger.error(properties?.toString())
-
-            val cert = File(properties?.x509Path);
-            val pem = File(properties?.pemPath);
 
             //然后将证书加载到
             val existingCertificateSource = PemFileCertificateSource(cert, pem, properties?.password);
@@ -78,13 +78,14 @@ open class HttpProxyAutoConfiguration {
         return this.proxyServer
     }
 
-    fun chackProxyProperties():Boolean{
+    private  fun chackProxyProperties():Boolean{
         if(properties != null){
             return (properties.x509Path != null && properties.pemPath != null && properties.password!= null)
         }
 
         return  false
     }
+
 
     companion object {
 

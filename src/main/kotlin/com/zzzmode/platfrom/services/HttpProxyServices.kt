@@ -12,9 +12,6 @@ import org.springframework.stereotype.Service
 open class HttpProxyServices {
 
     @Autowired
-    private val httpProxy: BrowserMobProxy? = null
-
-
-
+    var httpProxy: BrowserMobProxy? = null
 
 }

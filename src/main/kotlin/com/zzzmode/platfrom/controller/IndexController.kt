@@ -13,7 +13,6 @@ import java.util.Date
  * Created by zl on 16/2/16.
  */
 @RestController
-@RequestMapping("/")
 class IndexController : BaseController(){
 
     companion object {
@@ -21,7 +20,7 @@ class IndexController : BaseController(){
         private val logger = LoggerFactory.getLogger(IndexController::class.java)
     }
 
-    @RequestMapping("/")
+    @RequestMapping(value = "/")
     fun hello(@RequestHeader headers: HttpHeaders): String {
         return "server ok !" + DateFormat.getInstance().format(Date()) + "\n" + headers.getFirst(HttpHeaders.USER_AGENT)
     }
