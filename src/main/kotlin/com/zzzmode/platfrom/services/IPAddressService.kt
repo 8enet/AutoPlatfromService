@@ -32,6 +32,9 @@ open class IPAddressService {
     val apiBDServer: String ? = null
 
 
+    /**
+     * 查询ip地址
+     */
     open fun getIpInfo(ip:String) : IPAddress?{
         //先用淘宝
         getIpTaobao(ip)?.apply {
@@ -51,6 +54,7 @@ open class IPAddressService {
         return IP_REGX.matches(ip)
     }
 
+    //淘宝接口
     private fun getIpTaobao(ip:String):IPAddress?{
 
         val request = Request.Builder().get()
@@ -63,6 +67,7 @@ open class IPAddressService {
         return null
     }
 
+    //百度接口
     private fun getIpBaidu(ip:String):IPAddress?{
         val request = Request.Builder()
                 .get()

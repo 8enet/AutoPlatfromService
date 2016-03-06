@@ -30,7 +30,7 @@ object HttpRequestClient {
 
     init {
         client = OkHttpClient.Builder()
-                .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1",8888)))
+                //.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1",8888)))
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .build()
     }
