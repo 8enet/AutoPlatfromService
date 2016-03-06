@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
  * Created by zl on 16/2/16.
  */
 @Service
-open class MobileNumberAddressServices {
+open class MobileNumberAddressService {
 
     @Value("\${apikey}")
     val apikey: String ? = null

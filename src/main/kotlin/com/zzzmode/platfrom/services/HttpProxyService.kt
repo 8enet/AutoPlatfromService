@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
  * Created by zl on 16/2/27.
  */
 @Service
-open class HttpProxyServices {
+open class HttpProxyService {
 
     @Autowired
     var httpProxy: BrowserMobProxy? = null

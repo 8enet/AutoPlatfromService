@@ -4,7 +4,7 @@ import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
 import com.zzzmode.platfrom.exception.PlatfromServiceException
 import com.zzzmode.platfrom.services.IPAddressService
-import com.zzzmode.platfrom.services.MobileNumberAddressServices
+import com.zzzmode.platfrom.services.MobileNumberAddressService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.http.HttpHeaders
@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest
 class QueryController :BaseController(){
 
     @Autowired
-    var mobileNumberAddressServices: MobileNumberAddressServices?=null
+    var mobileNumberAddressServices: MobileNumberAddressService?=null
 
     @Autowired
     var ipAddressService:IPAddressService?=null

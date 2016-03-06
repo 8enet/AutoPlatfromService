@@ -17,7 +17,7 @@ import java.util.Arrays
  * Created by zl on 16/2/17.
  */
 @Service
-open class Yma0SMSPlatfromServices {
+open class Yma0SMSPlatfromService {
 
     val baseURL: HttpUrl
         @Bean
@@ -74,7 +74,7 @@ open class Yma0SMSPlatfromServices {
 
     companion object {
 
-        private val logger = LoggerFactory.getLogger(Yma0SMSPlatfromServices::class.java)
+        private val logger = LoggerFactory.getLogger(Yma0SMSPlatfromService::class.java)
     }
 
 

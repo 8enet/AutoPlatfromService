@@ -2,6 +2,8 @@ package com.zzzmode.platfrom
 
 import java.io.ByteArrayOutputStream
 import java.net.Socket
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.Executors
 
 /**
@@ -10,10 +12,17 @@ import java.util.concurrent.Executors
 open class MainKt
 
     fun main(args: Array<String>) {
+
+        val p=  Paths.get("proxyserver/certificate.cer");
+
+        println(p.isAbsolute)
+
+        println(ClassLoader.getSystemResource("proxyserver/certificate.cer"))
+
         val socket = Socket("127.0.0.1", 8080)
 
 
-        socket.outputStream.write("GET /phone/13800138000 \r\n\r\n\r\n".toByteArray())
+        socket.outputStream.write("GET /query?phone=13800138000 \r\n\r\n\r\n".toByteArray())
         println("----====")
         async() {
 
@@ -31,6 +40,7 @@ open class MainKt
             println(Thread.currentThread())
             println(String(baos.toByteArray()))
         }
+
 
     }
 

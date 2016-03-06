@@ -1,6 +1,6 @@
 package com.zzzmode.platfrom.controller
 
-import com.zzzmode.platfrom.services.Yma0SMSPlatfromServices
+import com.zzzmode.platfrom.services.Yma0SMSPlatfromService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @ComponentScan
 @RequestMapping("/sms")
-class SMSPlatfromController @Autowired constructor(val yma0SMSPlatfromServices: Yma0SMSPlatfromServices) :BaseController(){
+class SMSPlatfromController @Autowired constructor(val yma0SMSPlatfromServices: Yma0SMSPlatfromService) :BaseController(){
 
 
     @RequestMapping(value = "/token", method = arrayOf(RequestMethod.GET))

@@ -6,12 +6,9 @@ import java.net.InetSocketAddress
  * 一个虚拟用户
  * Created by zl on 16/2/28.
  */
-class VirtualUser {
+class VirtualUser (var id: Int){
 
-    /**
-     * session id
-     */
-    var id: Int ?= 0
+
 
     /**
      * 获取到的手机号

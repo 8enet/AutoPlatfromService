@@ -1,7 +1,7 @@
 package com.zzzmode.platfrom.proxyserver
 
 import com.zzzmode.platfrom.bean.HttpProxyProperties
-import com.zzzmode.platfrom.util.FileUtils
+import com.zzzmode.platfrom.util.Utils
 import com.zzzmode.platfrom.util.getFile
 import net.lightbody.bmp.BrowserMobProxy
 import net.lightbody.bmp.BrowserMobProxyServer
@@ -51,8 +51,8 @@ open class HttpProxyAutoConfiguration {
     @ConditionalOnMissingBean
     @Throws(UnknownHostException::class)
     open fun proxy(): BrowserMobProxy? {
-        val cert = FileUtils.getFile(properties?.x509Path);
-        val pem = FileUtils.getFile(properties?.pemPath);
+        val cert = Utils.getFile(properties?.x509Path);
+        val pem = Utils.getFile(properties?.pemPath);
 
         if(cert != null && pem != null && properties?.password != null) {
 
