@@ -17,10 +17,10 @@ import kotlin.concurrent.thread
 open class UserService {
 
     @Autowired
-    val smsPlatfromService : Yma0SMSPlatfromService?=null
+    var smsPlatfromService : Yma0SMSPlatfromService?=null
 
     @Autowired
-    val toolsService : ToolsService?=null
+    var toolsService : ToolsService?=null
 
     //在线用户
     private val onlineUsers= ConcurrentHashMap<Int, VirtualUser>()
@@ -35,16 +35,16 @@ open class UserService {
         val user:VirtualUser
         if(preUsers.isEmpty()){
             user=newUser()
-            onlineUsers.put(user.id,user)
         }else{
             user=preUsers.poll()
         }
+
+        onlineUsers.put(user.id,user)
 
         //异步生成一个用户
         thread {
             loadUser()
         }
-
         return user
     }
 
@@ -66,6 +66,12 @@ open class UserService {
         return onlineUsers.containsKey(id)
     }
 
+    /**
+     * 获取用户信息
+     */
+    fun getUser(id: Int):VirtualUser?{
+        return onlineUsers.get(id)
+    }
 
     private fun loadUser(){
 
@@ -79,13 +85,22 @@ open class UserService {
         user.phone=smsPlatfromService?.getMobileNum()
         //2.根据手机号获取区域ip
         toolsService?.getMobileAddress(user.phone!!)?.apply {
+            //地区
             user.province=this.province
             user.city=this.city
 
-            user.proxy= InetSocketAddress("127.0.0.1",8888)
+            //详细地址
+            user.address=toolsService?.getAddress(user.province!!,user.city!!)
+
+            //代理端口
+            user.proxyPort=8099
         }
 
+        //用户名密码
+        val (username, pwd) = toolsService!!.getUsernameAndPwd()
 
+        user.userName=username
+        user.userPwd=pwd
 
         return user
     }

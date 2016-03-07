@@ -12,17 +12,24 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 import java.util.*
 
 /**
  * Created by zl on 16/3/6.
  */
+@Service
 class ToolsService{
     companion object {
 
         private val logger = LoggerFactory.getLogger(ToolsService::class.java)
 
         private val IP_REGX="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$".toRegex()
+
+
+        private val PWD_CHARS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@"
+
+        private val RANDOM=Random()
     }
 
 
@@ -172,14 +179,14 @@ class ToolsService{
     /**
      * 随机生成真实地址
      */
-    fun getAddress(city:String):String{
+    fun getAddress(province:String,city:String):String{
         val url = HttpUrl.parse(addressSearchServer).newBuilder()
                 .addQueryParameter("ak", baidu_ak)
                 .addQueryParameter("scope", "1")
                 .addQueryParameter("page_size", "2")
                 .addQueryParameter("output", "json")
-                .addQueryParameter("region", city)
-                .addQueryParameter("q", randomRoom())
+                .addQueryParameter("region", province)
+                .addQueryParameter("q", city+randomRoom())
                 .build()
         val request = Request.Builder()
                 .get()
@@ -201,11 +208,27 @@ class ToolsService{
         return ""
     }
 
-
     //随机房间
     private fun randomRoom():String{
         val  random= Random();
         return "${random.nextInt(6)+1}0${random.nextInt(3)+1}室"
+    }
+
+
+
+    /** 用户名/密码 生成 **/
+    data class Result(val username: String, val pwd: String)
+    fun getUsernameAndPwd():Result{
+        val name=StringBuilder("lshuo1984")
+        val pwd=StringBuilder()
+
+        val p=RANDOM.nextInt(3)+8
+
+        for(i in IntRange(0,p)){
+            pwd.append(PWD_CHARS[RANDOM.nextInt(PWD_CHARS.length)])
+        }
+
+        return Result(name.toString(),pwd.toString())
     }
 
 }

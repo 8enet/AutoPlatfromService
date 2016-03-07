@@ -25,10 +25,15 @@ class VirtualUser (var id: Int){
      */
     var city: String ? = null
 
+//    /**
+//     * 获取到的代理ip
+//     */
+//    var proxyHost: String ? = null
+
     /**
-     * 获取到的代理ip
+     * 获取代理端口
      */
-    var proxy: InetSocketAddress ? = null
+    var proxyPort:Int?=8099
 
     /**
      * 详细地址
@@ -50,6 +55,10 @@ class VirtualUser (var id: Int){
      */
     var userPwd:String?=null
 
+    /**
+     * 邮箱
+     */
+    var email:String?=null
 
 
 }

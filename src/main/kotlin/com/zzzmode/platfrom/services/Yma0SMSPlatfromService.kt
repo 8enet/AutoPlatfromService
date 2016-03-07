@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.ResponseBody
+import java.util.*
 
-import java.util.Arrays
 import java.util.concurrent.TimeUnit
 
 /**
@@ -55,9 +55,16 @@ open class Yma0SMSPlatfromService {
     }
 
     fun getMobileNum():String{
-        TimeUnit.SECONDS.sleep(8)
 
-        return "13125144683"
+        TimeUnit.SECONDS.sleep(5)
+
+        val random= Random()
+        val number=StringBuilder("13")
+        for(i in IntRange(0,8)){
+            number.append(random.nextInt(9))
+        }
+
+        return number.toString()
     }
 
 
