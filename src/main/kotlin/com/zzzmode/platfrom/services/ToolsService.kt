@@ -183,7 +183,7 @@ class ToolsService{
         val url = HttpUrl.parse(addressSearchServer).newBuilder()
                 .addQueryParameter("ak", baidu_ak)
                 .addQueryParameter("scope", "1")
-                .addQueryParameter("page_size", "2")
+                .addQueryParameter("page_size", "5")
                 .addQueryParameter("output", "json")
                 .addQueryParameter("region", province)
                 .addQueryParameter("q", city+randomRoom())
@@ -199,7 +199,9 @@ class ToolsService{
                     forEach {
                         t->
                         t.address?.apply {
-                            return this
+                            if(this.length > 6){
+                                return this
+                            }
                         }
                     }
                 }
