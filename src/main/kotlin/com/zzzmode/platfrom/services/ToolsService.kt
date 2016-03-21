@@ -64,10 +64,11 @@ class ToolsService{
      * 简单判断ip地址
      */
     fun isIpAddress(ip: String?):Boolean{
-        if(ip == null){
-            return false
+
+        ip?.apply {
+            return  IP_REGX.matches(this)
         }
-        return IP_REGX.matches(ip)
+        return false
     }
 
     //淘宝接口
@@ -226,7 +227,7 @@ class ToolsService{
 
         val p=RANDOM.nextInt(3)+8
 
-        for(i in IntRange(0,p)){
+        for(i in 0..p){
             pwd.append(PWD_CHARS[RANDOM.nextInt(PWD_CHARS.length)])
         }
 

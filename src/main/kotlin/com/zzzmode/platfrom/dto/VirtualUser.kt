@@ -40,10 +40,6 @@ class VirtualUser (var id: Int){
      */
     var address:String?=null
 
-    /**
-     * 获取到的代理端口
-     */
-    var port:Int=8090
 
     /**
      * 用户名

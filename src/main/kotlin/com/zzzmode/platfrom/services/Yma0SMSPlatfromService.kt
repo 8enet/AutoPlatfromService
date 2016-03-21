@@ -60,7 +60,7 @@ open class Yma0SMSPlatfromService {
 
         val random= Random()
         val number=StringBuilder("13")
-        for(i in IntRange(0,8)){
+        for(i in 0..8){
             number.append(random.nextInt(9))
         }
 

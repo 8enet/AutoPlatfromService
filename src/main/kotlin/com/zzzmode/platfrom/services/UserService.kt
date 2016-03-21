@@ -98,7 +98,6 @@ open class UserService {
 
         //用户名密码
         val (username, pwd) = toolsService!!.getUsernameAndPwd()
-
         user.userName=username
         user.userPwd=pwd
 
