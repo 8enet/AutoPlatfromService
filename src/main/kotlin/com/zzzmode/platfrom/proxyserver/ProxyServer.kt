@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 /**
  * Created by zl on 16/3/26.
  */
-open  class ProxyServer(val properties:HttpProxyProperties) {
+open  class ProxyServer{
     companion object{
         private val logger=LoggerFactory.getLogger(ProxyServer::class.java)
     }
@@ -23,21 +23,26 @@ open  class ProxyServer(val properties:HttpProxyProperties) {
     /**
      * 构建代理
      */
-    fun newServer(): BrowserMobProxy? {
+    fun newServer(properties:HttpProxyProperties): BrowserMobProxy? {
         val cert = Utils.getFile(properties.x509Path);
         val pem = Utils.getFile(properties.pemPath);
 
+        this.proxyServer = BrowserMobProxyServer(properties.port);
+
         if(cert != null && pem != null && properties.password != null) {
-
             //然后将证书加载到
-            val existingCertificateSource = PemFileCertificateSource(cert, pem, properties.password);
+            try{
+                val existingCertificateSource = PemFileCertificateSource(cert, pem, properties.password);
+                val mitmManager = ImpersonatingMitmManager.builder()
+                        .rootCertificateSource(existingCertificateSource)
+                        .build();
+                proxyServer?.setMitmManager(mitmManager)
+            }catch(e:Exception){
+                e.printStackTrace()
+            }
 
-            val mitmManager = ImpersonatingMitmManager.builder()
-                    .rootCertificateSource(existingCertificateSource)
-                    .build();
-
-            this.proxyServer = BrowserMobProxyServer(properties.port);
-            proxyServer?.setMitmManager(mitmManager)
+        }else{
+            logger.warn("Certificate error,unsupport https proxy !")
         }
         return this.proxyServer
     }
@@ -83,6 +88,9 @@ open  class ProxyServer(val properties:HttpProxyProperties) {
     fun stop(){
         proxyServer?.apply {
             this.stop()
+            if(this is BrowserMobProxyServer){
+                filterFactories.clear()
+            }
             logger.debug("stop proxy server : "+proxyServer?.port)
         }
 

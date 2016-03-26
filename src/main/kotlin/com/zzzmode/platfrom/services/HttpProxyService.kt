@@ -37,10 +37,9 @@ open class HttpProxyService {
     fun startProxyServer(port:Int){
 
         properties?.apply {
-            val prop= copyProperties(port)
 
-            val server=ProxyServer(prop)
-            server.newServer()
+            val server=ProxyServer()
+            server.newServer(copyProperties(port))
             server.addFilter(interceptores)
             server.start()
             proxyServersMap.put(port,server)
