@@ -2,6 +2,7 @@ package com.zzzmode.platfrom.config.http
 
 import com.zzzmode.platfrom.proxyserver.HttpInterceptor
 import com.zzzmode.platfrom.proxyserver.interceptor.OnHttpInterceptor
+import com.zzzmode.platfrom.proxyserver.interceptor.ProxyHttpMessageInfo
 import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpResponse
 import net.lightbody.bmp.util.HttpMessageContents
@@ -24,11 +25,11 @@ open class HttpJSInterceptor : OnHttpInterceptor {
         return httpInfo.originalUrl.endsWith(".js")
     }
 
-    override fun onRequest(request: HttpRequest, contents: HttpMessageContents, messageInfo: HttpMessageInfo): HttpResponse? {
+    override fun onRequest(request: HttpRequest, contents: HttpMessageContents, messageInfo: ProxyHttpMessageInfo): HttpResponse? {
         return null
     }
 
-    override fun onResponse(response: HttpResponse, contents: HttpMessageContents, messageInfo: HttpMessageInfo) {
+    override fun onResponse(response: HttpResponse, contents: HttpMessageContents, messageInfo: ProxyHttpMessageInfo) {
 
         logger.debug("js "+response.status)
 

@@ -1,6 +1,6 @@
 package com.zzzmode.platfrom.services
 
-import com.zzzmode.platfrom.JsonKit
+import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
 import com.zzzmode.platfrom.http.HttpRequestClient
@@ -182,6 +182,7 @@ class ToolsService{
      */
     fun getAddress(province:String,city:String):String{
         if(baidu_ak == null){
+            logger.error("baidu ditu api ak is null !")
             return ""
         }
         val url = HttpUrl.parse(addressSearchServer).newBuilder()

@@ -2,12 +2,11 @@ package com.zzzmode.platfrom.services
 
 import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.util.Utils
+import com.zzzmode.platfrom.util.async
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.concurrent.thread
 
 /**
  * Created by zl on 16/3/6.
@@ -20,6 +19,9 @@ open class UserService {
 
     @Autowired
     var toolsService : ToolsService?=null
+
+    @Autowired
+    var httpProxyService:HttpProxyService?=null
 
     //在线用户
     private val onlineUsers= ConcurrentHashMap<Int, VirtualUser>()
@@ -41,7 +43,7 @@ open class UserService {
         onlineUsers.put(user.id,user)
 
         //异步生成一个用户
-        thread {
+        async() {
             loadUser()
         }
         return user
@@ -52,6 +54,9 @@ open class UserService {
      */
     open fun relsaseUser(id:Int){
         onlineUsers.get(id)?.apply {
+
+            httpProxyService?.stopProxyServer(this.proxyPort!!)
+
             onlineUsers.remove(id)
 
             println(this)
@@ -72,13 +77,17 @@ open class UserService {
         return onlineUsers.get(id)
     }
 
-    private fun loadUser(){
 
+    fun loadUser(){
         preUsers.add(newUser())
-
     }
 
     private fun newUser():VirtualUser{
+        if(httpProxyService == null){
+            throw RuntimeException(" httpProxyService is null !!!")
+        }
+
+
         val user=VirtualUser(Utils.generateUserId())
         //1.获取手机号
         user.phone=smsPlatfromService?.getMobileNum()
@@ -92,7 +101,10 @@ open class UserService {
             user.address=toolsService?.getAddress(user.province!!,user.city!!)
 
             //代理端口
-            user.proxyPort=8099
+            user.proxyPort=httpProxyService?.getNextPort()
+
+            //启动代理
+            httpProxyService?.startProxyServer(user.proxyPort!!)
         }
 
         //用户名密码

@@ -87,6 +87,7 @@ private  class  MyThreadFactory: ThreadFactory{
 /**
  * 异步执行
  */
-fun async(block: () -> Unit): Future<*> {
-    return  sExecutor.submit(block)
+fun async(body: () -> Unit): Future<*> {
+
+    return  sExecutor.submit(body)
 }

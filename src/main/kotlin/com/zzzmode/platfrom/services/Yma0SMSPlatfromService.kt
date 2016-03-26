@@ -56,8 +56,6 @@ open class Yma0SMSPlatfromService {
 
     fun getMobileNum():String{
 
-        TimeUnit.SECONDS.sleep(5)
-
         val random= Random()
         val number=StringBuilder("13")
         for(i in 0..8){

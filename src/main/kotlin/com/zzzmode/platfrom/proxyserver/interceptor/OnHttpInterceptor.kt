@@ -12,17 +12,17 @@ import net.lightbody.bmp.util.HttpMessageInfo
 interface OnHttpInterceptor {
 
     /**
-     * 判断是否符合拦截要求
+     * 判断是否符合拦截要求,根据需求实现规则匹配
      */
     fun isMatch(httpInfo: HttpMessageInfo):Boolean;
 
     /**
      * 符合拦截的request
      */
-    fun onRequest(request: HttpRequest, contents: HttpMessageContents, messageInfo:HttpMessageInfo):HttpResponse?;
+    fun onRequest(request: HttpRequest, contents: HttpMessageContents, messageInfo:ProxyHttpMessageInfo):HttpResponse?;
 
     /**
      * 符合拦截的response
      */
-    fun onResponse(response: HttpResponse, contents: HttpMessageContents, messageInfo:HttpMessageInfo);
+    fun onResponse(response: HttpResponse, contents: HttpMessageContents, messageInfo:ProxyHttpMessageInfo);
 }
