@@ -1,26 +1,11 @@
 package com.zzzmode.platfrom.http
 
-import com.google.gson.Gson
-import com.zzzmode.platfrom.bean.MobileNumberAddress
 import com.zzzmode.platfrom.bean.ObjectWapper
-import com.zzzmode.platfrom.http.response.MobileNumberAddressResp
 import okhttp3.*
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.json.GsonJsonParser
-import org.springframework.util.SocketUtils
-
 import java.io.IOException
-import java.lang.ref.SoftReference
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.util.Arrays
-import java.util.concurrent.BrokenBarrierException
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.CyclicBarrier
+import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReadWriteLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * Created by zl on 16/2/16.

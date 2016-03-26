@@ -2,7 +2,6 @@ package com.zzzmode.platfrom.proxyserver
 
 import com.zzzmode.platfrom.bean.HttpProxyProperties
 import com.zzzmode.platfrom.util.Utils
-import com.zzzmode.platfrom.util.getFile
 import net.lightbody.bmp.BrowserMobProxy
 import net.lightbody.bmp.BrowserMobProxyServer
 import net.lightbody.bmp.mitm.PemFileCertificateSource

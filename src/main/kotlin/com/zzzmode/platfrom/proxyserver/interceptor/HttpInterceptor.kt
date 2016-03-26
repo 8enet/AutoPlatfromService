@@ -4,11 +4,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 
 /**
- * 启动http代理配置
+ * 拦截注解
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FILE)
 @kotlin.annotation.MustBeDocumented
-@Import(HttpProxyAutoConfiguration::class)
+@Import(HttpInterceptorConfiguration::class)
 @Configuration
-annotation class EnableHttpProxy
+annotation class HttpInterceptor
