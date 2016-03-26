@@ -181,6 +181,9 @@ class ToolsService{
      * 随机生成真实地址
      */
     fun getAddress(province:String,city:String):String{
+        if(baidu_ak == null){
+            return ""
+        }
         val url = HttpUrl.parse(addressSearchServer).newBuilder()
                 .addQueryParameter("ak", baidu_ak)
                 .addQueryParameter("scope", "1")

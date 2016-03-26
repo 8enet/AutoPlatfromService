@@ -1,14 +1,12 @@
 package com.zzzmode.platfrom.redis
 
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.concurrent.atomic.AtomicLong
-
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.StringRedisTemplate
-import org.springframework.data.redis.listener.ChannelTopic
-import org.springframework.scheduling.annotation.Scheduled
 
 
+/**
+ * redis sub/pub 发送
+ */
 class RedisPublisherImpl() : IRedisPublisher {
 
     @Autowired

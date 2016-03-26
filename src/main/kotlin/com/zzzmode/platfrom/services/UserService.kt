@@ -2,7 +2,6 @@ package com.zzzmode.platfrom.services
 
 import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.util.Utils
-import com.zzzmode.platfrom.util.generateUserId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.InetSocketAddress
