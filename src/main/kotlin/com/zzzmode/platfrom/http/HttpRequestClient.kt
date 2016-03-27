@@ -4,6 +4,8 @@ import com.zzzmode.platfrom.bean.ObjectWapper
 import okhttp3.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -11,21 +13,23 @@ import java.util.concurrent.TimeUnit
  * Created by zl on 16/2/16.
  */
 object HttpRequestClient {
-    val client : OkHttpClient;
-
+    private val defaultClient : OkHttpClient
     init {
-        client = OkHttpClient.Builder()
-                //.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1",8888)))
+        defaultClient = OkHttpClient.Builder()
+                //.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1", 8888)))
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .build()
+
+    }
+
+    fun getDefaultClient():OkHttpClient{
+        return defaultClient
     }
 
     private val logger = LoggerFactory.getLogger(HttpRequestClient::class.java)
 
 
-
-
-    fun request(request: Request): String? {
+    fun request(request: Request,httpClient : OkHttpClient=defaultClient): String? {
 
         val wapper = ObjectWapper<String?>()
         val callback = object : Callback {
@@ -52,7 +56,7 @@ object HttpRequestClient {
             }
 
         }
-        client.newCall(request).enqueue(callback)
+        httpClient.newCall(request).enqueue(callback)
 
         synchronized (wapper) {
             try {
@@ -63,7 +67,7 @@ object HttpRequestClient {
 
         }
 
-        logger.info("Http req --> " + request.url() + " \n resp --> " + wapper.value)
+        //logger.info("Http req --> " + request.url() + " \n resp --> " + wapper.value)
         return wapper.value
     }
 

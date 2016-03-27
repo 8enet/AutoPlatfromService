@@ -87,7 +87,6 @@ open class UserService {
             throw RuntimeException(" httpProxyService is null !!!")
         }
 
-
         val user=VirtualUser(Utils.generateUserId())
         //1.获取手机号
         user.phone=smsPlatfromService?.getMobileNum()
@@ -104,7 +103,7 @@ open class UserService {
             user.proxyPort=httpProxyService?.getNextPort()
 
             //启动代理
-            httpProxyService?.startProxyServer(user.proxyPort!!)
+            httpProxyService?.startProxyServer(user.proxyPort!!,toolsService?.getProxy(user))
         }
 
         //用户名密码

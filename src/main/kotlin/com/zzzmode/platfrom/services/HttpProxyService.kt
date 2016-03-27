@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.stereotype.Service
 import org.springframework.util.SocketUtils
+import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.PreDestroy
 
@@ -34,13 +35,16 @@ open class HttpProxyService {
     /**
      * 启动代理
      */
-    fun startProxyServer(port:Int){
+    fun startProxyServer(port:Int,chainedProxyAddress: InetSocketAddress? = null){
 
         properties?.apply {
 
             val server=ProxyServer()
             server.newServer(copyProperties(port))
             server.addFilter(interceptores)
+            chainedProxyAddress?.apply {
+                server.addScendaryProxy(chainedProxyAddress)
+            }
             server.start()
             proxyServersMap.put(port,server)
         }
@@ -59,6 +63,9 @@ open class HttpProxyService {
         }
     }
 
+    /**
+     * 获取可用本地代理端口
+     */
     fun getNextPort():Int{
         var port= SocketUtils.findAvailableTcpPort(minPort!!)
         return port;

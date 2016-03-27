@@ -3,16 +3,22 @@ package com.zzzmode.platfrom.services
 import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
+import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.http.HttpRequestClient
 import com.zzzmode.platfrom.http.response.BaiduPlaceResp
 import com.zzzmode.platfrom.http.response.IPAddressBaiduResp
 import com.zzzmode.platfrom.http.response.IPAddressTaobaoResp
 import com.zzzmode.platfrom.http.response.MobileNumberAddressResp
+import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.Request
+import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.util.StringUtils
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.*
 
 /**
@@ -236,6 +242,109 @@ class ToolsService{
         }
 
         return Result(name.toString(),pwd.toString())
+    }
+
+
+    /**
+     *
+     */
+    fun findProxys_66ip(city: String?):List<InetSocketAddress>?{
+        var sbx=""
+        if(!StringUtils.isEmpty(city)) {
+            HttpRequestClient.request(Request.Builder()
+                    .url("http://www.66ip.cn/urlencode.php")
+                    .post(FormBody.Builder().add("text", city).add("type", "").build())
+                    .addHeader("Accept-Language", "zh-CN,zh;q=0.8")
+                    .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                    .addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.108 Safari/537.36")
+                    .build())?.apply {
+
+                sbx=this.split("-")[0]
+
+            }
+        }
+
+        HttpRequestClient.request(Request.Builder()
+                .url(HttpUrl.parse("http://www.66ip.cn/mo.php?&tqsl=10&port=&export=&ktip=&sxa=")
+                .newBuilder()
+                .addEncodedQueryParameter("sxb",sbx)
+                .build()
+                )
+                .build())?.apply {
+
+            val items= Jsoup.parse(this).body().text().split(" ")
+            val proxys=ArrayList<InetSocketAddress>()
+            for(item in items){
+                parse2Inet(item)?.apply {
+                    proxys.add(this)
+                }
+            }
+            return@findProxys_66ip proxys
+        }
+        return null
+    }
+
+    /**
+     * 转换
+     */
+    private fun parse2Inet(str:String?):InetSocketAddress?{
+        if(!StringUtils.isEmpty(str)){
+            str?.split(":")?.apply {
+                val host=this[0]
+                val port=this[1]
+                if(!StringUtils.isEmpty(host) && !StringUtils.isEmpty(port)){
+                    try{
+                        return@parse2Inet InetSocketAddress(host,Integer.parseInt(port))
+                    }catch(e:Exception){
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    /** 代理地址 */
+
+    fun getProxy(user:VirtualUser): InetSocketAddress? {
+
+        findProxys_66ip(user.city)?.forEach {
+            if (checkChainedProxy(it)) {
+                return@getProxy it
+            }
+        }
+
+        findProxys_66ip(user.province)?.forEach {
+            if (checkChainedProxy(it)) {
+                return@getProxy it
+            }
+        }
+        findProxys_66ip(null)?.forEach {
+            if (checkChainedProxy(it)) {
+                return@getProxy it
+            }
+        }
+        logger.warn("not found proxy server !")
+        return null
+    }
+
+    /**
+     * 检测代理是否有效
+     */
+    fun checkChainedProxy(inetSocketAddress: InetSocketAddress):Boolean{
+        proxyContent(inetSocketAddress)?.apply {
+            //logger.debug("checkChainedProxy --> "+this+"   "+inetSocketAddress)
+            return@checkChainedProxy this.contains(inetSocketAddress.hostString)
+        }
+        return false
+    }
+
+    private fun proxyContent(inetSocketAddress: InetSocketAddress):String?{
+        val client=HttpRequestClient.getDefaultClient().newBuilder().proxy(Proxy(Proxy.Type.HTTP,inetSocketAddress)).build()
+
+        val request=Request.Builder().url("http://ip.cn").addHeader("User-Agent","curl/7.43.0").build()
+
+        return HttpRequestClient.request(request,client)
     }
 
 }

@@ -8,17 +8,19 @@ import net.lightbody.bmp.BrowserMobProxy
 import net.lightbody.bmp.BrowserMobProxyServer
 import net.lightbody.bmp.mitm.PemFileCertificateSource
 import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager
+import org.littleshoot.proxy.ChainedProxyAdapter
 import org.slf4j.LoggerFactory
+import java.net.InetSocketAddress
 
 /**
  * Created by zl on 16/3/26.
  */
-open  class ProxyServer{
+class ProxyServer{
     companion object{
         private val logger=LoggerFactory.getLogger(ProxyServer::class.java)
     }
 
-    private var proxyServer: BrowserMobProxy? = null
+    private var proxyServer: BrowserMobProxyServer? = null
 
     /**
      * 构建代理
@@ -48,7 +50,7 @@ open  class ProxyServer{
     }
 
 
-    open fun addFilter(interceptores:List<OnHttpInterceptor>?):BrowserMobProxy?{
+    fun addFilter(interceptores:List<OnHttpInterceptor>?):BrowserMobProxy?{
         proxyServer?.addRequestFilter {
             httpRequest, httpMessageContents, httpMessageInfo ->
 
@@ -71,6 +73,29 @@ open  class ProxyServer{
         }
         return this.proxyServer
     }
+
+
+    /**
+     * 添加二级代理
+     */
+    fun addScendaryProxy(chainedProxyAddress:InetSocketAddress?){
+
+        chainedProxyAddress?.apply {
+            logger.debug("addScendaryProxy -> port: ${proxyServer?.port}  ${chainedProxyAddress}")
+            proxyServer?.setChainedProxyManager { httpRequest, queue ->
+
+                val chainedProxyAdapter=object : ChainedProxyAdapter() {
+                    override fun getChainedProxyAddress(): InetSocketAddress? {
+                        return chainedProxyAddress
+                    }
+                }
+                queue.add(chainedProxyAdapter)
+                queue.add(ChainedProxyAdapter.FALLBACK_TO_DIRECT_CONNECTION)
+            }
+        }
+
+    }
+
 
     /**
      * 启动
