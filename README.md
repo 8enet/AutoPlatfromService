@@ -3,6 +3,7 @@
 spring boot + gradle + kotlin
 
 #Run
+> java8+,kotlin 1.0.1+,gradle 2.12+   
 `gradle bootRun`
 
 #Services
