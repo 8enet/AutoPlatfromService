@@ -47,10 +47,12 @@ configure(allprojects) {
 
 dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
-
+    compile 'org.springframework.boot:spring-boot-starter-undertow'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'org.springframework.boot:spring-boot-starter-web'
-    compile 'org.springframework.boot:spring-boot-starter-websocket'
+    compile ('org.springframework.boot:spring-boot-starter-websocket'){
+        exclude group: "org.springframework.boot", name: "spring-boot-starter-tomcat"
+    }
     compile 'org.springframework.boot:spring-boot-autoconfigure'
 
     compile 'org.springframework.boot:spring-boot-starter-redis'
