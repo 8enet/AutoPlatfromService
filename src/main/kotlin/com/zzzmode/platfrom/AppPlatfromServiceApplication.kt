@@ -20,21 +20,26 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
 
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         //可选,启动时生成一个用户
-        //userService?.loadUser()
+        userService?.loadUser()
     }
 
 
-//    @Bean
-//    open fun  embeddedServletContainerFactory():UndertowEmbeddedServletContainerFactory {
-//        val factory = UndertowEmbeddedServletContainerFactory();
-//        val custom=object : UndertowBuilderCustomizer{
-//            override fun customize(builder: Undertow.Builder?) {
-//                builder?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-//            }
-//        }
-//        factory.addBuilderCustomizers(custom)
-//        return factory;
-//    }
+    /**
+     * enable http/2.0
+     * {@see http://undertow.io/blog/2015/03/26/HTTP2-In-Wildfly.html}
+     * {@see http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html}
+     */
+    @Bean
+    open fun  embeddedServletContainerFactory():UndertowEmbeddedServletContainerFactory {
+        val factory = UndertowEmbeddedServletContainerFactory();
+        val custom=object : UndertowBuilderCustomizer{
+            override fun customize(builder: Undertow.Builder?) {
+                builder?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+            }
+        }
+        factory.addBuilderCustomizers(custom)
+        return factory;
+    }
 
 
 }

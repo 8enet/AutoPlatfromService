@@ -6,6 +6,8 @@ spring boot + gradle + kotlin
 > java8+,kotlin 1.0.1+,gradle 2.12+   
 `gradle bootRun`
 
+如果启用http/2.0,需要 `-Xbootclasspath/p:/alpn-boot-$ALPN_VERSION.jar`
+
 #Services
 查询ip
 http://127.0.0.1:8080/query?ip=8.8.8.8
