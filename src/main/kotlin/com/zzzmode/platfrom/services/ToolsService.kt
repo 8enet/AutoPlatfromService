@@ -4,6 +4,7 @@ import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
 import com.zzzmode.platfrom.dto.VirtualUser
+import com.zzzmode.platfrom.exception.PlatfromServiceException
 import com.zzzmode.platfrom.http.HttpRequestClient
 import com.zzzmode.platfrom.http.response.BaiduPlaceResp
 import com.zzzmode.platfrom.http.response.IPAddressBaiduResp
@@ -55,6 +56,11 @@ class ToolsService{
      * 查询ip地址
      */
     fun getIpInfo(ip:String) : IPAddress?{
+        if(!isIpAddress(ip)){
+            throw PlatfromServiceException("ip address illegal!",2)
+        }
+
+
         //先用淘宝
         getIpTaobao(ip)?.apply {
             return this
@@ -124,6 +130,10 @@ class ToolsService{
      * 查询手机号归属地
      */
     fun getMobileAddress(phone: String): MobileNumberAddress? {
+        if(!isPhoneNumber(phone)){
+            throw PlatfromServiceException("moblie phone number illegal !",1)
+        }
+
         queryBybd(phone)?.apply {
             return this
         }

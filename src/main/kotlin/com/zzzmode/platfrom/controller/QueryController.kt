@@ -28,14 +28,9 @@ class QueryController :BaseController(){
     @RequestMapping(params = arrayOf("phone"))
     @Throws(PlatfromServiceException::class)
     fun viewPhone(@RequestParam phone: String): MobileNumberAddress? {
-        if (toolsService?.isPhoneNumber(phone)!!) {
-
-            toolsService?.getMobileAddress(phone)?.apply {
-                return this;
-            }
+        toolsService?.getMobileAddress(phone)?.apply {
+            return this;
         }
-        throwException("query fail!", 1)
-
         return null
     }
 
@@ -50,13 +45,11 @@ class QueryController :BaseController(){
         if("".equals(cip)){
             cip=request.remoteHost
         }
-        if(toolsService?.isIpAddress(cip)!!){
-            toolsService?.getIpInfo(cip)?.apply {
-                return this
-            }
-        }else{
-            throwException("不是ip地址", 3)
+
+        toolsService?.getIpInfo(cip)?.apply {
+            return this
         }
+
         return null
     }
 

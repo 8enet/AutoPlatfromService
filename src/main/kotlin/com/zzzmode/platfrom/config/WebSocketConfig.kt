@@ -1,8 +1,6 @@
 package com.zzzmode.platfrom.config
 
-import com.zzzmode.platfrom.websocket.DefaultEchoService
-import com.zzzmode.platfrom.websocket.EchoService
-import com.zzzmode.platfrom.websocket.EchoWebSocketHandler
+import com.zzzmode.platfrom.websocket.WSSocketHandler
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
@@ -24,16 +22,12 @@ open class WebSocketConfig : WebSocketConfigurer {
 
 
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(echoWebSocketHandler(), "/echo").setAllowedOrigins("*")
+        registry.addHandler(echoWebSocketHandler(), "/control").setAllowedOrigins("*")
     }
 
     @Bean
-    open  fun echoWebSocketHandler(): WebSocketHandler {
-        return EchoWebSocketHandler(echoService())
+    open fun echoWebSocketHandler(): WebSocketHandler {
+        return WSSocketHandler()
     }
 
-    @Bean
-    open fun echoService(): EchoService {
-        return DefaultEchoService()
-    }
 }
