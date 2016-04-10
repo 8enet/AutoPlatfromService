@@ -6,8 +6,15 @@ spring boot + gradle + kotlin
 > java8+,kotlin 1.0.1+,gradle 2.12+   
 `gradle bootRun`
 
-如果启用http/2.0,需要 `-Xbootclasspath/p:/alpn-boot-$ALPN_VERSION.jar`
+or:
+
+`gradle build`
+`java -jar build/libs/*.jar`
+
+如果启用http/2.0,需要 `-Xbootclasspath/p:/path/alpn-boot-$ALPN_VERSION.jar`
+从 http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html 下载对应版本jdk的alpn-boot-$version.jar
 默认使用https/wss协议。
+
 
 #Services
 查询ip

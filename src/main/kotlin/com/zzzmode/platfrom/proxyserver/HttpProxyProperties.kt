@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component
 /**
  * Created by zl on 16/2/16.
  */
-@Component
 @ConfigurationProperties(prefix = "zzzmode.proxyserver")
 open class HttpProxyProperties(
         var port: Int = 8099,
@@ -16,10 +15,6 @@ open class HttpProxyProperties(
         var password: String? = null
 ) {
 
-
-    fun copyProperties():HttpProxyProperties{
-        return HttpProxyProperties(port,x509Path,pemPath,password)
-    }
 
     /**
      * copy properties

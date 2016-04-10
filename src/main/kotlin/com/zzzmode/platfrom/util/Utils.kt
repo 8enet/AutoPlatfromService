@@ -27,22 +27,6 @@ class Utils {
             }
             return null
         }
-
-//        fun generateUserId(): Int {
-//            while (true) {
-//                val result = sNextGeneratedId.get();
-//                var newValue = result + 1;
-//                if (newValue > Int.MAX_VALUE) {
-//                    newValue = 1
-//                }
-//                if (sNextGeneratedId.compareAndSet(result, newValue)) {
-//                    return result;
-//                }
-//            }
-//
-//        }
-
-
     }
 
 }
