@@ -21,4 +21,6 @@ http://127.0.0.1:8080/user
 查询用户信息
 http://127.0.0.1:8080/user/1
 
+支持通过Websocket调用接口。
+
 write by kotlin !
