@@ -1,8 +1,10 @@
 package com.zzzmode.platfrom
 
+import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.services.UserService
 import io.undertow.Undertow
 import io.undertow.UndertowOptions
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -15,12 +17,18 @@ import org.springframework.context.event.ContextRefreshedEvent
 @SpringBootApplication
 open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedEvent>{
 
+    companion object{
+        private val logger=LoggerFactory.getLogger(AppPlatfromServiceApplication::class.java)
+    }
+
     @Autowired
-    val userService: UserService?=null
+    var userService: UserService?=null
+
+    @Autowired
+    var repository: UserRepository?=null
 
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
-        //可选,启动时生成一个用户
-        userService?.loadUser()
+        logger.info("AppPlatfromService start success !")
     }
 
 

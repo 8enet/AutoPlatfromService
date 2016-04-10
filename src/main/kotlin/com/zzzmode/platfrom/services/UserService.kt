@@ -1,9 +1,12 @@
 package com.zzzmode.platfrom.services
 
+import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.util.Utils
 import com.zzzmode.platfrom.util.async
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -14,6 +17,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @Service
 open class UserService {
 
+    companion object{
+        private val logger=LoggerFactory.getLogger(UserService::class.java)
+    }
+
     @Autowired
     var smsPlatfromService : Yma0SMSPlatfromService?=null
 
@@ -23,71 +30,54 @@ open class UserService {
     @Autowired
     var httpProxyService:HttpProxyService?=null
 
-    //在线用户
-    private val onlineUsers= ConcurrentHashMap<Int, VirtualUser>()
+    @Autowired
+    var userRepository: UserRepository?=null
 
-    //预生成用户
-    private val preUsers= ConcurrentLinkedQueue<VirtualUser>()
 
     /**
      * 获取一个新用户
      */
-    open fun obainUser(): VirtualUser {
-        val user:VirtualUser
-        if(preUsers.isEmpty()){
-            user=newUser()
-        }else{
-            user=preUsers.poll()
-        }
+    fun obainUser(): VirtualUser {
 
-        onlineUsers.put(user.id,user)
-
-        //异步生成一个用户
-        async() {
-            loadUser()
-        }
-        return user
+        return newUser()
     }
 
     /**
      * 释放用户资源
      */
-    open fun relsaseUser(id:Int){
-        onlineUsers.get(id)?.apply {
-
+    fun relsaseUser(id:Long){
+        getUser(id)?.apply {
             httpProxyService?.stopProxyServer(this.proxyPort!!)
-
-            onlineUsers.remove(id)
-
-            println(this)
         }
     }
 
-    /**
-     * 检测是否在线
-     */
-    open fun online(id:Int):Boolean{
-        return onlineUsers.containsKey(id)
+    fun deleteUser(id: Long):Boolean{
+        userRepository?.delete(id)?.run {
+            return this
+        }
+        return false
     }
+
 
     /**
      * 获取用户信息
      */
-    fun getUser(id: Int):VirtualUser?{
-        return onlineUsers.get(id)
+    fun getUser(id: Long):VirtualUser?{
+
+        return  userRepository?.findOne(id)
     }
 
-
-    fun loadUser(){
-        preUsers.add(newUser())
+    fun getUsers():List<VirtualUser>?{
+        return userRepository?.findAll()
     }
+
 
     private fun newUser():VirtualUser{
         if(httpProxyService == null){
             throw RuntimeException(" httpProxyService is null !!!")
         }
 
-        val user=VirtualUser(Utils.generateUserId())
+        val user=VirtualUser()
         //1.获取手机号
         user.phone=smsPlatfromService?.getMobileNum()
         //2.根据手机号获取区域ip
@@ -103,13 +93,16 @@ open class UserService {
             user.proxyPort=httpProxyService?.getNextPort()
 
             //启动代理
-            httpProxyService?.startProxyServer(user.proxyPort!!,toolsService?.getProxy(user))
+            //httpProxyService?.startProxyServer(user.proxyPort!!,toolsService?.getProxy(user))
         }
 
         //用户名密码
         val (username, pwd) = toolsService!!.getUsernameAndPwd()
         user.userName=username
         user.userPwd=pwd
+
+        logger.info("newUser -->> "+user)
+        userRepository?.save(user)
 
         return user
     }

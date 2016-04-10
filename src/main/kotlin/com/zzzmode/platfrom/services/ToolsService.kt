@@ -10,6 +10,9 @@ import com.zzzmode.platfrom.http.response.BaiduPlaceResp
 import com.zzzmode.platfrom.http.response.IPAddressBaiduResp
 import com.zzzmode.platfrom.http.response.IPAddressTaobaoResp
 import com.zzzmode.platfrom.http.response.MobileNumberAddressResp
+import com.zzzmode.platfrom.util.Utils
+import com.zzzmode.platfrom.util.invokAll
+import com.zzzmode.platfrom.util.newTemporaryExecutor
 import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -21,6 +24,9 @@ import org.springframework.util.StringUtils
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by zl on 16/3/6.
@@ -318,21 +324,16 @@ class ToolsService{
 
     fun getProxy(user:VirtualUser): InetSocketAddress? {
 
-        findProxys_66ip(user.city)?.forEach {
-            if (checkChainedProxy(it)) {
-                return@getProxy it
-            }
+        stepChecks(findProxys_66ip(user.city))?.apply {
+            return@getProxy this
         }
 
-        findProxys_66ip(user.province)?.forEach {
-            if (checkChainedProxy(it)) {
-                return@getProxy it
-            }
+        stepChecks(findProxys_66ip(user.province))?.apply {
+            return@getProxy this
         }
-        findProxys_66ip(null)?.forEach {
-            if (checkChainedProxy(it)) {
-                return@getProxy it
-            }
+
+        stepChecks(findProxys_66ip(null))?.apply {
+            return@getProxy this
         }
         logger.warn("not found proxy server !")
         return null
@@ -349,8 +350,43 @@ class ToolsService{
         return false
     }
 
+    private fun stepChecks(inets:List<InetSocketAddress>?):InetSocketAddress?{
+        inets?.apply {
+            val callables=ArrayList<Callable<InetSocketAddress>>()
+            forEach {
+                callables.add(
+                        Callable<InetSocketAddress> {
+                            if(checkChainedProxy(it)){
+                                return@Callable  it
+                            }else{
+                                throw  Exception("proxy connection error !")
+                            }
+
+                        }
+                )
+            }
+            var executor=newTemporaryExecutor("tools-check-proxy",size)
+            try{
+                logger.info("")
+                executor?.invokeAny(callables)?.apply {
+                    return@stepChecks this
+                }
+            }catch(e:Throwable){
+                //e.printStackTrace()
+            }finally{
+                executor!!.shutdownNow()
+            }
+        }
+        return null
+    }
+
     private fun proxyContent(inetSocketAddress: InetSocketAddress):String?{
-        val client=HttpRequestClient.getDefaultClient().newBuilder().proxy(Proxy(Proxy.Type.HTTP,inetSocketAddress)).build()
+        val client=HttpRequestClient.getDefaultClient().
+                newBuilder()
+                .proxy(Proxy(Proxy.Type.HTTP,inetSocketAddress))
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build()
 
         val request=Request.Builder().url("http://ip.cn").addHeader("User-Agent","curl/7.43.0").build()
 

@@ -16,7 +16,7 @@ object HttpRequestClient {
     private val defaultClient : OkHttpClient
     init {
         defaultClient = OkHttpClient.Builder()
-                //.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1", 8888)))
+                .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1", 8888)))
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .build()
 
@@ -31,45 +31,24 @@ object HttpRequestClient {
 
     fun request(request: Request,httpClient : OkHttpClient=defaultClient): String? {
 
-        val wapper = ObjectWapper<String?>()
-        val callback = object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                wapper.value=null
-                end()
-            }
+        val response= httpClient.newCall(request).execute()
 
-            @Throws(IOException::class)
-            override fun onResponse(call: Call, response: Response) {
-
-                if(response.isSuccessful) {
-                    response.body()?.string()?.apply {
-                        wapper.value = this
-                    }
-                }
-                end()
-            }
-
-            private fun end() {
-                synchronized (wapper) {
-                    (wapper as java.lang.Object).notifyAll()
-                }
-            }
-
+        if(response.isSuccessful){
+            return response.body()?.string()
         }
+        //logger.info("Http req --> " + request.url() + " \n resp --> " + wapper.value)
+        return null
+    }
+
+    fun requestAsync(request: Request,callback: Callback?,httpClient : OkHttpClient=defaultClient){
+
         httpClient.newCall(request).enqueue(callback)
 
-        synchronized (wapper) {
-            try {
-                (wapper as java.lang.Object).wait()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-
-        }
-
-        //logger.info("Http req --> " + request.url() + " \n resp --> " + wapper.value)
-        return wapper.value
     }
+
+
+
+
 
     @JvmStatic
     fun main(args: Array<String>) {

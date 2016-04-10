@@ -1,18 +1,20 @@
 package com.zzzmode.platfrom.dto
 
-import java.net.InetSocketAddress
+import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * 一个虚拟用户
  * Created by zl on 16/2/28.
  */
-class VirtualUser (var id: Int){
-
+@Document
+class VirtualUser :AbstractDocument(){
 
 
     /**
      * 获取到的手机号
      */
+    @Indexed(unique = true)
     var phone: String ? = null
 
     /**
@@ -55,6 +57,17 @@ class VirtualUser (var id: Int){
      * 邮箱
      */
     var email:String?=null
+
+    /**
+     * 创建时间
+     */
+    var createdDate:Long?=System.currentTimeMillis()
+
+
+
+    override fun toString(): String{
+        return "VirtualUser(id=$id,phone=$phone, province=$province, city=$city, proxyPort=$proxyPort, address=$address, userName=$userName, userPwd=$userPwd, email=$email, createdDate=$createdDate)"
+    }
 
 
 }

@@ -40,7 +40,7 @@ class IndexController : BaseController(){
     }
 
     @RequestMapping(value = "/user/{id}")
-    fun userInfo(@PathVariable id: Int):VirtualUser?{
+    fun userInfo(@PathVariable id: Long):VirtualUser?{
         return userService?.getUser(id)
     }
 
