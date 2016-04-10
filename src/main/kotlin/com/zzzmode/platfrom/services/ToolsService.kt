@@ -1,6 +1,5 @@
 package com.zzzmode.platfrom.services
 
-import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
 import com.zzzmode.platfrom.dto.VirtualUser
@@ -10,8 +9,7 @@ import com.zzzmode.platfrom.http.response.BaiduPlaceResp
 import com.zzzmode.platfrom.http.response.IPAddressBaiduResp
 import com.zzzmode.platfrom.http.response.IPAddressTaobaoResp
 import com.zzzmode.platfrom.http.response.MobileNumberAddressResp
-import com.zzzmode.platfrom.util.Utils
-import com.zzzmode.platfrom.util.invokAll
+import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.util.newTemporaryExecutor
 import okhttp3.FormBody
 import okhttp3.HttpUrl
@@ -25,7 +23,6 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 import java.util.*
 import java.util.concurrent.Callable
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 /**
@@ -44,7 +41,6 @@ class ToolsService{
 
         private val RANDOM=Random()
     }
-
 
     /********      ip地址    **/
 
@@ -202,31 +198,36 @@ class ToolsService{
     /**
      * 随机生成真实地址
      */
-    fun getAddress(province:String,city:String):String{
+    fun getAddress(province:String?,city:String?):String{
         if(baidu_ak == null){
-            logger.error("baidu ditu api ak is null !")
+            logger.error("baidu map api ak is null !")
             return ""
         }
+
+        var randomAD=randomAddress()
         val url = HttpUrl.parse(addressSearchServer).newBuilder()
                 .addQueryParameter("ak", baidu_ak)
-                .addQueryParameter("scope", "1")
-                .addQueryParameter("page_size", "5")
+                .addQueryParameter("city_limit", "true")
                 .addQueryParameter("output", "json")
-                .addQueryParameter("region", province)
-                .addQueryParameter("q", city+randomRoom())
+                .addQueryParameter("region", if(StringUtils.isEmpty(city)) province else city )
+                .addQueryParameter("query", randomAD)
                 .build()
-        val request = Request.Builder()
-                .get()
-                .url(url)
-                .build()
+        val request = Request.Builder().get().url(url).build()
 
         HttpRequestClient.request(request)?.apply {
-            JsonKit.gson.fromJson(this, BaiduPlaceResp::class.java)?.addressDatas?.apply {
-                if(!isEmpty()){
+            JsonKit.gson.fromJson(this, BaiduPlaceResp::class.java)?.apply {
+                if(status == 4 || status >= 300){
+                    //当前key配额用完了
+                    logger.error("please change baidu map apikey!")
+                }
+
+                addressDatas?.run {
                     forEach {
-                        t->
-                        t.address?.apply {
-                            if(this.length > 6){
+                        it.address?.run {
+                            if(contains(randomAD)){
+                                if(endsWith("附近")){
+                                    return this+it.name
+                                }
                                 return this
                             }
                         }
@@ -234,15 +235,19 @@ class ToolsService{
                 }
             }
         }
-        return ""
+        return getAddress(province,city)
     }
 
-    //随机房间
-    private fun randomRoom():String{
-        val  random= Random();
-        return "${random.nextInt(6)+1}0${random.nextInt(3)+1}室"
-    }
 
+    //随机地址
+    // 规则 {[1-6]0[1-4]室}  {[100-600]号}
+    private fun randomAddress():String{
+        when(RANDOM.nextInt(10)){
+            in 0..2 -> return "${RANDOM.nextInt(6)+1}0${RANDOM.nextInt(3)+1}室"
+            in 3..8 -> return "${RANDOM.nextInt(300)+100}号"
+            else -> return "${RANDOM.nextInt(500)+100}号"
+        }
+    }
 
 
     /** 用户名/密码 生成 **/

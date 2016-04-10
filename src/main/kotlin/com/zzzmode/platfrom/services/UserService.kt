@@ -87,13 +87,13 @@ open class UserService {
             user.city=this.city
 
             //详细地址
-            user.address=toolsService?.getAddress(user.province!!,user.city!!)
+            user.address=toolsService?.getAddress(user.province,user.city)
 
             //代理端口
             user.proxyPort=httpProxyService?.getNextPort()
 
             //启动代理
-            //httpProxyService?.startProxyServer(user.proxyPort!!,toolsService?.getProxy(user))
+            httpProxyService?.startProxyServer(user.proxyPort!!,toolsService?.getProxy(user))
         }
 
         //用户名密码
