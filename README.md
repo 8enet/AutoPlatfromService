@@ -11,8 +11,8 @@ or:
 `gradle build`
 `java -jar build/libs/*.jar`
 
-如果启用http/2.0,需要 `-Xbootclasspath/p:/path/alpn-boot-$ALPN_VERSION.jar`
-从 http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html 下载对应版本jdk的alpn-boot-$version.jar
+如果启用http/2.0,需要 `-Xbootclasspath/p:/path/alpn-boot-$ALPN_VERSION.jar`   
+从 http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html 下载对应版本jdk的alpn-boot-$version.jar   
 默认使用https/wss协议。
 
 
