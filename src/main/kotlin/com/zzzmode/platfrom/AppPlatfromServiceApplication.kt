@@ -1,5 +1,6 @@
 package com.zzzmode.platfrom
 
+import com.zzzmode.platfrom.dao.repository.SequenceDao
 import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.services.UserService
 import io.undertow.Undertow
@@ -25,10 +26,11 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
     var userService: UserService?=null
 
     @Autowired
-    var repository: UserRepository?=null
+    val sequenceDao: SequenceDao?=null
 
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         logger.info("AppPlatfromService start success !")
+        sequenceDao?.initSequence()
     }
 
 

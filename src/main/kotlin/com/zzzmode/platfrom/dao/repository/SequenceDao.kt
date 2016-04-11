@@ -7,5 +7,11 @@ import org.springframework.data.repository.NoRepositoryBean
  */
 @NoRepositoryBean
 interface SequenceDao {
-    fun getNextSequenceId(key:String):Long;
+    companion object{
+        val USER_SEQ_KEY="user_seq"
+    }
+
+    fun initSequence()
+
+    fun getNextSequenceId(key:String):Long
 }

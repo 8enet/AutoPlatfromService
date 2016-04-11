@@ -16,8 +16,10 @@ object HttpRequestClient {
     private val defaultClient : OkHttpClient
     init {
         defaultClient = OkHttpClient.Builder()
-                .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1", 8888)))
-                .connectTimeout(5, TimeUnit.SECONDS)
+                //.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1", 8888)))
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
                 .build()
 
     }
@@ -30,11 +32,20 @@ object HttpRequestClient {
 
 
     fun request(request: Request,httpClient : OkHttpClient=defaultClient): String? {
+        var response:Response?=null
+        try {
+            response=httpClient.newCall(request).execute()
 
-        val response= httpClient.newCall(request).execute()
-
-        if(response.isSuccessful){
-            return response.body()?.string()
+            if(response.isSuccessful){
+                return response.body()?.string()
+            }
+        } catch(e: Exception) {
+            try {
+                response?.body()?.close()
+            } catch(e: Exception) {
+            }finally{
+                throw e
+            }
         }
         //logger.info("Http req --> " + request.url() + " \n resp --> " + wapper.value)
         return null

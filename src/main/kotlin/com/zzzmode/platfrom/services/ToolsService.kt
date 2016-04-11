@@ -340,7 +340,7 @@ class ToolsService{
         stepChecks(findProxys_66ip(null))?.apply {
             return@getProxy this
         }
-        logger.warn("not found proxy server !")
+        logger.warn("not found available proxy server !")
         return null
     }
 
@@ -372,14 +372,15 @@ class ToolsService{
             }
             var executor=newTemporaryExecutor("tools-check-proxy",size)
             try{
-                logger.info("")
+                logger.info("check proxy siez: $size")
                 executor?.invokeAny(callables)?.apply {
-                    return@stepChecks this
+                    return this
                 }
             }catch(e:Throwable){
                 //e.printStackTrace()
             }finally{
-                executor!!.shutdownNow()
+                 executor!!.shutdownNow()
+
             }
         }
         return null

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Repository
 open class UserRepositoryImpl : UserRepository {
 
     companion object{
-        private  val USER_SEQ_KEY="user_seq"
+
         private val logger= LoggerFactory.getLogger(UserRepositoryImpl::class.java)
     }
 
@@ -46,7 +46,7 @@ open class UserRepositoryImpl : UserRepository {
     override  fun save(entity: VirtualUser?): VirtualUser?{
 
         entity?.apply {
-            entity.id = sequenceDao?.getNextSequenceId(USER_SEQ_KEY)
+            entity.id = sequenceDao?.getNextSequenceId(SequenceDao.USER_SEQ_KEY)
             mongoTemplate?.save(entity)
         }
 

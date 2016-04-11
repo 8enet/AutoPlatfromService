@@ -77,6 +77,7 @@ class WSController {
             resp.data=null
             resp.msg="error request -> $orderModel"
         }
+        logger.info("send msg -> "+resp)
         session?.sendMessage(TextMessage(JsonKit.gson.toJson(resp)))
 
     }

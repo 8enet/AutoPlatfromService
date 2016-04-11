@@ -2,14 +2,9 @@ package com.zzzmode.platfrom.services
 
 import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.dto.VirtualUser
-import com.zzzmode.platfrom.util.Utils
-import com.zzzmode.platfrom.util.async
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Created by zl on 16/3/6.
@@ -102,8 +97,12 @@ open class UserService {
         user.userPwd=pwd
 
         logger.info("newUser -->> "+user)
-        userRepository?.save(user)
-
+        try{
+            userRepository?.save(user)
+        }catch(e:Exception){
+            e.printStackTrace()
+            logger.error("mongodb save user error !!!",e)
+        }
         return user
     }
 

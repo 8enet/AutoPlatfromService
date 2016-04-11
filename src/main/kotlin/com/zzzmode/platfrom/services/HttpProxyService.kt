@@ -3,6 +3,7 @@ package com.zzzmode.platfrom.services
 import com.zzzmode.platfrom.bean.HttpProxyProperties
 import com.zzzmode.platfrom.proxyserver.ProxyServer
 import com.zzzmode.platfrom.proxyserver.interceptor.OnHttpInterceptor
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.ComponentScan
@@ -19,7 +20,9 @@ import javax.annotation.PreDestroy
 @Service
 @ComponentScan
 open class HttpProxyService {
-
+    companion object{
+        private val logger=LoggerFactory.getLogger(HttpProxyService::class.java)
+    }
 
     @Value("\${zzzmode.proxyserver.port}")
     var minPort:Int?=30000
@@ -39,14 +42,18 @@ open class HttpProxyService {
 
         properties?.apply {
 
-            val server=ProxyServer()
-            server.newServer(copyProperties(port))
-            server.addFilter(interceptores)
-            chainedProxyAddress?.apply {
-                server.addScendaryProxy(chainedProxyAddress)
+            try {
+                val server=ProxyServer()
+                server.newServer(copyProperties(port))
+                server.addFilter(interceptores)
+                chainedProxyAddress?.apply {
+                    server.addScendaryProxy(chainedProxyAddress)
+                }
+                server.start()
+                proxyServersMap.put(port,server)
+            } catch(e: Exception) {
+                logger.error("start proxy error! port:$port",e)
             }
-            server.start()
-            proxyServersMap.put(port,server)
         }
 
     }

@@ -1,17 +1,12 @@
 package com.zzzmode.platfrom.dao.repository
 
-import com.zzzmode.platfrom.dto.VirtualUser
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.context.annotation.Profile
 import org.springframework.data.mongodb.core.FindAndModifyOptions
 import org.springframework.data.mongodb.core.MongoOperations
-import org.springframework.data.mongodb.repository.query.MongoEntityInformation
-import org.springframework.stereotype.Repository
-
-import org.springframework.data.mongodb.core.query.Criteria.*
+import org.springframework.data.mongodb.core.query.Criteria.where
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import org.springframework.stereotype.Repository
 
 /**
  * 实现mongodb 中id自增
@@ -19,6 +14,18 @@ import org.springframework.data.mongodb.core.query.Update
  */
 @Repository
 open class SequenceDaoImpl : SequenceDao {
+
+    override fun initSequence() {
+        mongoOperations?.run {
+            if(!exists(Query.query(where("_id").`is`(SequenceDao.USER_SEQ_KEY)),SequenceId::class.java)){
+                val seq=SequenceId()
+                seq.id=SequenceDao.USER_SEQ_KEY
+                seq.seq=0
+                save(seq)
+            }
+        }
+
+    }
 
     @Autowired
     val mongoOperations: MongoOperations?=null
