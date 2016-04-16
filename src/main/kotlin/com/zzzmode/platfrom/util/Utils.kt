@@ -87,3 +87,7 @@ fun newTemporaryExecutor(poolName:String,taskSize:Int): ExecutorService? {
     }
     return service
 }
+
+public inline fun Any?.isNull(): Boolean = this == null
+
+public inline fun Any?.isNotNull(): Boolean = this != null

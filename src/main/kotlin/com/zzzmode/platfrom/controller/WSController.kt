@@ -3,11 +3,16 @@ package com.zzzmode.platfrom.controller
 import com.zzzmode.platfrom.dto.OrderModel
 import com.zzzmode.platfrom.dto.ResponseModel
 import com.zzzmode.platfrom.dto.VirtualUser
+import com.zzzmode.platfrom.services.OnlineUserManager
 import com.zzzmode.platfrom.services.ToolsService
 import com.zzzmode.platfrom.services.UserService
 import com.zzzmode.platfrom.util.JsonKit
+import com.zzzmode.platfrom.util.isNotNull
+import com.zzzmode.platfrom.util.isNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
@@ -30,6 +35,11 @@ class WSController {
 
     @Autowired
     var toolsService: ToolsService?=null
+
+
+    @Autowired
+    var onlineUserManager: OnlineUserManager?=null
+
 
     fun onRecvAction(orderModel: OrderModel?,session: WebSocketSession?){
         orderModel?.module?.apply {
@@ -76,6 +86,17 @@ class WSController {
             resp.status=false
             resp.data=null
             resp.msg="error request -> $orderModel"
+        }else{
+            //session add user
+            if(OrderModel.Action.ADD.equals(orderModel.action)){
+                session?.attributes?.put("user",resp.data)
+                session?.attributes?.put("proxy_port",resp.data?.proxyPort)
+
+                if(session.isNotNull() && resp.data.isNotNull()){
+                    onlineUserManager?.addUser(session!!,resp.data!!)
+                }
+
+            }
         }
         logger.info("send msg -> "+resp)
         session?.sendMessage(TextMessage(JsonKit.gson.toJson(resp)))

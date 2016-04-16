@@ -38,16 +38,14 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
      * enable http/2.0
      * {@see http://undertow.io/blog/2015/03/26/HTTP2-In-Wildfly.html}
      * {@see http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html}
+     * {@see http://central.maven.org/maven2/org/mortbay/jetty/alpn/alpn-boot}
      */
     @Bean
     open fun  embeddedServletContainerFactory():UndertowEmbeddedServletContainerFactory {
-        val factory = UndertowEmbeddedServletContainerFactory();
-        val custom=object : UndertowBuilderCustomizer{
-            override fun customize(builder: Undertow.Builder?) {
-                builder?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-            }
-        }
-        factory.addBuilderCustomizers(custom)
+        val factory = UndertowEmbeddedServletContainerFactory()
+        factory.addBuilderCustomizers(UndertowBuilderCustomizer{
+            it?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+        })
         return factory;
     }
 

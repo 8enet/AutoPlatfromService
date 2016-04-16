@@ -2,6 +2,7 @@ package com.zzzmode.platfrom.websocket
 
 import com.zzzmode.platfrom.controller.WSController
 import com.zzzmode.platfrom.dto.OrderModel
+import com.zzzmode.platfrom.services.OnlineUserManager
 import com.zzzmode.platfrom.util.JsonKit
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,13 +14,16 @@ import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @ComponentScan
 open class WSSocketHandler : TextWebSocketHandler() {
-    companion object {
 
+    companion object {
         private val logger = LoggerFactory.getLogger(WSSocketHandler::class.java)
     }
 
     @Autowired
     val wsController: WSController?=null
+
+    @Autowired
+    var onlineUserManager: OnlineUserManager?=null
 
     override fun afterConnectionEstablished(session: WebSocketSession?) {
 
@@ -47,6 +51,11 @@ open class WSSocketHandler : TextWebSocketHandler() {
         super.afterConnectionClosed(session, status)
 
         logger.info("session " + session?.remoteAddress + "   " + session?.id + "   closed ")
+
+        session?.run {
+            onlineUserManager?.removeUser(session)
+        }
+
     }
 
 
