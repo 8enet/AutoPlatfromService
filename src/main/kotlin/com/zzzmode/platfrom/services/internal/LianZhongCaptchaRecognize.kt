@@ -4,18 +4,21 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.annotations.SerializedName
 import com.zzzmode.platfrom.http.HttpRequestClient
 import com.zzzmode.platfrom.util.JsonKit
+import com.zzzmode.platfrom.websocket.getCaptchaId
 import okhttp3.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.web.socket.WebSocketSession
 import java.io.IOException
 
 /**
  * Created by zl on 16/4/16.
  */
-abstract  class LianZhongCaptchaRecognize : ICaptchaRecognizeService {
+abstract  class LianZhongCaptchaRecognize : AbsCaptchaRecognize() {
     companion object{
 
         private val API_SERVER="http://bbb4.hyslt.com/api.php?mod=php&act=upload"
+        private val API_ERROR_REPORT="http://bbb4.hyslt.com/api.php?mod=php&act=error"
         private val logger=LoggerFactory.getLogger(LianZhongCaptchaRecognize::class.java)
     }
 
@@ -56,7 +59,7 @@ abstract  class LianZhongCaptchaRecognize : ICaptchaRecognizeService {
                         var e:Throwable?=null
                         try{
                             JsonKit.gson.fromJson(response.body().string(),ApiResponse::class.java)?.apply {
-                                onRecognizeSuccess(this.data?.captchaCode,port)
+                                onRecognizeSuccess(this.data?.captchaCode,this.data?.id,port)
                             }
                             e=null
                         }catch(e:Throwable){
@@ -83,6 +86,41 @@ abstract  class LianZhongCaptchaRecognize : ICaptchaRecognizeService {
         HttpRequestClient.requestAsync(Request.Builder()
                 .url(API_SERVER)
                 .post(requestBody)
+                .build(),callback)
+    }
+
+    override fun onReportError(port: Int) {
+        onlineUserManager?.findSessionByPort(port)?.apply {
+            onReportError(this)
+        }
+    }
+
+
+    override fun onReportError(session: WebSocketSession?) {
+        session?.getCaptchaId()?.apply {
+            if(!isNullOrEmpty()){
+                sendErrorCode(toString())
+            }
+        }
+    }
+
+    private fun sendErrorCode(id: String){
+        val callback=object : Callback{
+            override fun onFailure(call: Call?, e: IOException?) {
+                logger.debug("send error fail: ${e?.message}")
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                logger.debug("send error resp:${response?.body()?.string()}")
+            }
+        }
+        HttpRequestClient.requestAsync(Request.Builder()
+                .url(API_ERROR_REPORT)
+                .post(FormBody.Builder()
+                        .add("user_name",username)
+                        .add("user_pw",password)
+                        .add("yzm_id",id)
+                        .build())
                 .build(),callback)
     }
 

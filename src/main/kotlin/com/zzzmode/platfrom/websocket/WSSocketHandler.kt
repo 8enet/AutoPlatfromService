@@ -2,7 +2,7 @@ package com.zzzmode.platfrom.websocket
 
 import com.zzzmode.platfrom.controller.WSController
 import com.zzzmode.platfrom.dto.OrderModel
-import com.zzzmode.platfrom.services.OnlineUserManager
+import com.zzzmode.platfrom.services.manager.OnlineUserManager
 import com.zzzmode.platfrom.util.JsonKit
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

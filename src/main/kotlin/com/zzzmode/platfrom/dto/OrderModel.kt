@@ -9,8 +9,9 @@ class OrderModel {
         private  constructor()
 
         companion object{
-            val TOOLS="tools"
-            val USER="user"
+            val TOOLS="tools"     //工具
+            val USER="user"       //用户
+            val CAPTCHA="captcha" //验证码模块
         }
 
     }

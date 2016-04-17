@@ -8,9 +8,11 @@ import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpResponse
 import net.lightbody.bmp.util.HttpMessageContents
 import net.lightbody.bmp.util.HttpMessageInfo
+import org.apache.commons.codec.binary.Base64
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import java.util.regex.Pattern
 
 /**
  * Created by zl on 16/3/26.
@@ -20,6 +22,8 @@ open class HttpImageInterceptor : OnHttpInterceptor {
 
     companion object{
         private val logger=LoggerFactory.getLogger(HttpImageInterceptor::class.java)
+
+        private val base64ImageRexg= Pattern.compile("^data:image/(png|jpg|gif);base64,").toRegex()
     }
 
     @Value("\${captcha_regx}")
@@ -34,8 +38,6 @@ open class HttpImageInterceptor : OnHttpInterceptor {
         if(!imgRule.isNullOrEmpty()){
             return httpInfo.originalUrl.contains(imgRule!!)
         }
-
-
         return false
     }
 
@@ -47,12 +49,19 @@ open class HttpImageInterceptor : OnHttpInterceptor {
 
         logger.info("response port ${messageInfo.proxyPort} find img: ${messageInfo.originalUrl}  status:${response.status} size:${contents.binaryContents.size}")
 
-        captchaRecognizeService?.onRecvData(contents.binaryContents,messageInfo.proxyPort)
+        if(contents.isText){
+            captchaRecognizeService?.onRecvData(correctBase64Image(contents.textContents),messageInfo.proxyPort)
+        }else{
+            captchaRecognizeService?.onRecvData(contents.binaryContents,messageInfo.proxyPort)
+        }
     }
 
     override fun toString(): String{
         return "HttpImageInterceptor()"
     }
 
+    private fun correctBase64Image(text:String):ByteArray{
+        return Base64.decodeBase64(text.replaceFirst(base64ImageRexg,""))
+    }
 
 }

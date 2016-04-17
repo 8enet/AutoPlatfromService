@@ -3,12 +3,15 @@ package com.zzzmode.platfrom.controller
 import com.zzzmode.platfrom.dto.OrderModel
 import com.zzzmode.platfrom.dto.ResponseModel
 import com.zzzmode.platfrom.dto.VirtualUser
-import com.zzzmode.platfrom.services.OnlineUserManager
+import com.zzzmode.platfrom.services.CaptchaRecognizeService
+import com.zzzmode.platfrom.services.manager.OnlineUserManager
 import com.zzzmode.platfrom.services.ToolsService
 import com.zzzmode.platfrom.services.UserService
 import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.util.isNotNull
 import com.zzzmode.platfrom.util.isNull
+import com.zzzmode.platfrom.websocket.setUser
+import com.zzzmode.platfrom.websocket.setUserProxyPort
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -36,6 +39,8 @@ class WSController {
     @Autowired
     var toolsService: ToolsService?=null
 
+    @Autowired
+    var captchaRecognizeService: CaptchaRecognizeService?=null
 
     @Autowired
     var onlineUserManager: OnlineUserManager?=null
@@ -47,9 +52,12 @@ class WSController {
             when(this){
                 OrderModel.Module.TOOLS -> toolsQuery(orderModel,session)
                 OrderModel.Module.USER  -> user(orderModel,session)
+                OrderModel.Module.CAPTCHA -> captcha(orderModel,session)
             }
         }
     }
+
+    /**   tool  **/
 
     private fun toolsQuery(orderModel: OrderModel,session: WebSocketSession?){
         orderModel.params?.get("ip")?.apply {
@@ -67,6 +75,11 @@ class WSController {
         }
     }
 
+    /**   tool  end **/
+
+
+    /**   user **/
+    // add user {"version":0,"module":"user","action":"add"}
     private fun user(orderModel: OrderModel,session: WebSocketSession?){
         var resp:ResponseModel<VirtualUser>?=null
 
@@ -89,8 +102,10 @@ class WSController {
         }else{
             //session add user
             if(OrderModel.Action.ADD.equals(orderModel.action)){
-                session?.attributes?.put("user",resp.data)
-                session?.attributes?.put("proxy_port",resp.data?.proxyPort)
+
+                session?.setUser(resp.data)
+                session?.setUserProxyPort(resp.data?.proxyPort)
+
 
                 if(session.isNotNull() && resp.data.isNotNull()){
                     onlineUserManager?.addUser(session!!,resp.data!!)
@@ -158,4 +173,24 @@ class WSController {
         return resp
     }
 
+
+    /**   user end   **/
+
+
+
+    /**  captcha  **/
+
+    fun captcha(orderModel: OrderModel,session: WebSocketSession?){
+        when(orderModel.action){
+            OrderModel.Action.UPDATE ->
+                reportError(session)
+        }
+    }
+
+    // 验证码错误报告
+    private fun reportError(session: WebSocketSession?){
+        captchaRecognizeService?.onReportError(session)
+    }
+
+    /**  captcha end **/
 }

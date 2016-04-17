@@ -3,8 +3,8 @@ package com.zzzmode.platfrom.services
 import com.zzzmode.platfrom.dto.ResponseModel
 import com.zzzmode.platfrom.services.internal.LianZhongCaptchaRecognize
 import com.zzzmode.platfrom.util.JsonKit
+import com.zzzmode.platfrom.websocket.setCaptchaId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.socket.TextMessage
 
@@ -18,13 +18,10 @@ class CaptchaRecognizeService : LianZhongCaptchaRecognize(){
         private val logger=LoggerFactory.getLogger(CaptchaRecognizeService::class.java)
     }
 
-    @Autowired
-    var onlineUserManager: OnlineUserManager?=null
 
-
-    override fun onRecognizeSuccess(code: String?, port: Int) {
+    override fun onRecognizeSuccess(code: String?,id:String?, port: Int) {
         code?.run {
-            notify(port,ResponseModel<CaptchaResponse>(true,null,CaptchaResponse(code)))
+            notify(port,ResponseModel<CaptchaResponse>(true,null,CaptchaResponse(code,cid=id)))
         }
     }
 
@@ -37,10 +34,13 @@ class CaptchaRecognizeService : LianZhongCaptchaRecognize(){
     private fun notify(port: Int,resp:ResponseModel<CaptchaResponse>){
         logger.debug("notify port:${port},resp:${resp}")
         onlineUserManager?.findSessionByPort(port)?.apply {
+            if(!resp.data?.cid.isNullOrEmpty()){
+                setCaptchaId(resp.data?.cid)
+            }
             sendMessage(TextMessage(JsonKit.gson.toJson(resp)))
         }
     }
 
-    data class CaptchaResponse(var code: String?,var msg: String?=null)
+    data class CaptchaResponse(var code: String?,var msg: String?=null,var cid: String?=null)
 
 }

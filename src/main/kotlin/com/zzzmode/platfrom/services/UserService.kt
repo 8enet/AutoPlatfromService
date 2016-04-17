@@ -2,6 +2,7 @@ package com.zzzmode.platfrom.services
 
 import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.dto.VirtualUser
+import com.zzzmode.platfrom.services.manager.OnlineUserManager
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -44,14 +45,14 @@ open class UserService {
         return newUser()
     }
 
-    /**
-     * 释放用户资源
-     */
-    fun relsaseUser(id: Long) {
-        getUser(id)?.apply {
-            httpProxyService?.stopProxyServer(this.proxyPort!!)
-        }
-    }
+//    /**
+//     * 释放用户资源
+//     */
+//    fun relsaseUser(id: Long) {
+//        getUser(id)?.apply {
+//            httpProxyService?.stopProxyServer(this.proxyPort!!)
+//        }
+//    }
 
     fun deleteUser(id: Long): Boolean {
         userRepository?.delete(id)?.run {
