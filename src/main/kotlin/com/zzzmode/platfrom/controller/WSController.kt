@@ -23,6 +23,9 @@ import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 
 /**
+ * websocket controll ,请求使用json数据
+ * e.g. {"version":0,"module":"user","action":"add"}
+ *
  * Created by zl on 16/4/7.
  */
 @Component
@@ -53,6 +56,7 @@ class WSController {
                 OrderModel.Module.TOOLS -> toolsQuery(orderModel,session)
                 OrderModel.Module.USER  -> user(orderModel,session)
                 OrderModel.Module.CAPTCHA -> captcha(orderModel,session)
+                else -> logger.warn("unkonw model:${orderModel}")
             }
         }
     }
@@ -60,14 +64,14 @@ class WSController {
     /**   tool  **/
 
     private fun toolsQuery(orderModel: OrderModel,session: WebSocketSession?){
-        orderModel.params?.get("ip")?.apply {
+        orderModel.params.get("ip")?.apply {
             toolsService?.getIpInfo(this)?.apply {
                 session?.sendMessage(TextMessage(JsonKit.gson.toJson(this)))
             }
             return@toolsQuery
         }
 
-        orderModel.params?.get("phone")?.apply {
+        orderModel.params.get("phone")?.apply {
             toolsService?.getMobileAddress(this)?.apply {
                 session?.sendMessage(TextMessage(JsonKit.gson.toJson(this)))
             }
@@ -121,7 +125,7 @@ class WSController {
 
     private fun user_get(orderModel: OrderModel):ResponseModel<VirtualUser>{
         val resp=ResponseModel<VirtualUser>()
-        orderModel.params?.get("id")?.apply {
+        orderModel.params.get("id")?.apply {
             if(!StringUtils.isEmpty(this)) {
                 userService?.getUser(toLong())?.run {
                     resp.status = true
@@ -156,7 +160,7 @@ class WSController {
 
     private fun user_delete(orderModel: OrderModel):ResponseModel<VirtualUser>{
         val resp=ResponseModel<VirtualUser>()
-        orderModel.params?.get("id")?.run {
+        orderModel.params.get("id")?.run {
             if(!StringUtils.isEmpty(this)) {
                 userService?.deleteUser(toLong())?.run {
                     resp.status = this

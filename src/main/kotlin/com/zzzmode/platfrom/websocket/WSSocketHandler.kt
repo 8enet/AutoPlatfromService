@@ -32,11 +32,12 @@ open class WSSocketHandler : TextWebSocketHandler() {
 
     @Throws(Exception::class)
     public override fun handleTextMessage(session: WebSocketSession?, message: TextMessage?) {
-        val echoMessage = message!!.payload
-        logger.info("server recv --> " + echoMessage)
         try{
+            val echoMessage = message!!.payload
+            logger.info("server recv --> " + echoMessage)
             wsController?.onRecvAction(JsonKit.gson.fromJson(echoMessage,OrderModel::class.java),session)
         }catch(e:Throwable){
+            logger.error("error -->" ,e)
         }
 
     }
