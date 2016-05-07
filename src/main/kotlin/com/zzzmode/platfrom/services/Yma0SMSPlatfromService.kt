@@ -191,11 +191,13 @@ open class Yma0SMSPlatfromService {
             addIgnoreList(number)
             return null
         }
+        //java.lang.VerifyError: Bad type on operand stack
+        //这里不能使用嵌套?上面的都可以,不知道为什么.
 
-        fun retry(): String? {
-            sleep(5)
-            return getVcodeAndReleaseMobile(number,retry-1)
-        }
+//        fun retry(): String? {
+//            sleep(5)
+//            return getVcodeAndReleaseMobile(number,retry-1)
+//        }
 
         val request = Request.Builder().get().url(baseBuilder("getVcodeAndReleaseMobile").addQueryParameter("mobile",number).build()).build()
         HttpRequestClient.request(request)?.apply {
@@ -206,12 +208,15 @@ open class Yma0SMSPlatfromService {
             logger.error("getVcodeAndReleaseMobile error,number:${number},retry:${retry},${this},${errorMsgMap.get(this)}")
 
             if(holdOnRequest(this)){
-                return retry()
+                sleep(5)
+                return getVcodeAndReleaseMobile(number,retry-1)
+                //return retry()
             }
         }
         logger.error("getVcodeAndReleaseMobile response is null ! number:${number}")
-
-        return retry()
+        sleep(5)
+        return getVcodeAndReleaseMobile(number,retry-1)
+        //return retry()
     }
 
 
