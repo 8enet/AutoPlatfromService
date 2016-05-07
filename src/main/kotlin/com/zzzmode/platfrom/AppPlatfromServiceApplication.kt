@@ -1,5 +1,6 @@
 package com.zzzmode.platfrom
 
+import com.zzzmode.platfrom.config.ServerContainerConfigure
 import com.zzzmode.platfrom.dao.repository.SequenceDao
 import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.services.UserService
@@ -32,14 +33,8 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
     @Autowired
     val sequenceDao: SequenceDao?=null
 
-    @Value("\${server.http.port}")
-    var httpPort:Int=8080
-
-    @Value("\${server.https.enabled}")
-    var httpsEnabled:Boolean=true
-
-    @Value("\${server.http2.enabled}")
-    var http2Enabled:Boolean=true
+    @Autowired
+    var serverConfig: ServerContainerConfigure?=null
 
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         logger.info("AppPlatfromService start success !")
@@ -56,29 +51,40 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
     @Bean
     open fun  embeddedServletContainerFactory():UndertowEmbeddedServletContainerFactory {
         val factory = UndertowEmbeddedServletContainerFactory()
-        //启用https
-        if (httpsEnabled) {
 
-            if (http2Enabled) {
+        logger.debug("${serverConfig}")
+        serverConfig?.http2?.apply {
+            if(enabled){
                 //启用http/2.0
                 factory.addBuilderCustomizers(UndertowBuilderCustomizer {
                     it?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
                 })
             }
-
-            factory.addBuilderCustomizers(UndertowBuilderCustomizer({
-                it?.addHttpListener(httpPort, "0.0.0.0")
-            }))
-            //将http请求重定向到https
-            factory.addDeploymentInfoCustomizers(UndertowDeploymentInfoCustomizer({
-                it.addSecurityConstraint(
-                        SecurityConstraint()
-                                .addWebResourceCollection(WebResourceCollection().addUrlPattern("/*"))
-                                .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
-                                .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT)
-                ).confidentialPortManager = ConfidentialPortManager({ factory.port })
-            }))
         }
+
+
+        serverConfig?.http?.apply {
+            if(enabled){
+                //启用http
+                factory.addBuilderCustomizers(UndertowBuilderCustomizer({
+                    it?.addHttpListener(port, "0.0.0.0")
+                }))
+            }
+
+
+            if(redirect2Https){
+                //将http请求重定向到https
+                factory.addDeploymentInfoCustomizers(UndertowDeploymentInfoCustomizer({
+                    it.addSecurityConstraint(
+                            SecurityConstraint()
+                                    .addWebResourceCollection(WebResourceCollection().addUrlPattern("/*"))
+                                    .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
+                                    .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT)
+                    ).confidentialPortManager = ConfidentialPortManager({ factory.port })
+                }))
+            }
+        }
+
         return factory;
     }
 
