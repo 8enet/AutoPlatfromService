@@ -5,11 +5,15 @@ import com.zzzmode.platfrom.dao.repository.UserRepository
 import com.zzzmode.platfrom.services.UserService
 import io.undertow.Undertow
 import io.undertow.UndertowOptions
+import io.undertow.servlet.Servlets
+import io.undertow.servlet.api.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.embedded.undertow.UndertowBuilderCustomizer
+import org.springframework.boot.context.embedded.undertow.UndertowDeploymentInfoCustomizer
 import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory
 import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Bean
@@ -28,6 +32,15 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
     @Autowired
     val sequenceDao: SequenceDao?=null
 
+    @Value("\${server.http.port}")
+    var httpPort:Int=8080
+
+    @Value("\${server.https.enabled}")
+    var httpsEnabled:Boolean=true
+
+    @Value("\${server.http2.enabled}")
+    var http2Enabled:Boolean=true
+
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         logger.info("AppPlatfromService start success !")
         sequenceDao?.initSequence()
@@ -43,9 +56,29 @@ open class AppPlatfromServiceApplication : ApplicationListener<ContextRefreshedE
     @Bean
     open fun  embeddedServletContainerFactory():UndertowEmbeddedServletContainerFactory {
         val factory = UndertowEmbeddedServletContainerFactory()
-        factory.addBuilderCustomizers(UndertowBuilderCustomizer{
-            it?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
-        })
+        //启用https
+        if (httpsEnabled) {
+
+            if (http2Enabled) {
+                //启用http/2.0
+                factory.addBuilderCustomizers(UndertowBuilderCustomizer {
+                    it?.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
+                })
+            }
+
+            factory.addBuilderCustomizers(UndertowBuilderCustomizer({
+                it?.addHttpListener(httpPort, "0.0.0.0")
+            }))
+            //将http请求重定向到https
+            factory.addDeploymentInfoCustomizers(UndertowDeploymentInfoCustomizer({
+                it.addSecurityConstraint(
+                        SecurityConstraint()
+                                .addWebResourceCollection(WebResourceCollection().addUrlPattern("/*"))
+                                .setTransportGuaranteeType(TransportGuaranteeType.CONFIDENTIAL)
+                                .setEmptyRoleSemantic(SecurityInfo.EmptyRoleSemantic.PERMIT)
+                ).confidentialPortManager = ConfidentialPortManager({ factory.port })
+            }))
+        }
         return factory;
     }
 
