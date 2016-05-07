@@ -25,10 +25,10 @@ open class UserRepositoryImpl : UserRepository {
     }
 
     @Autowired
-    var mongoTemplate: MongoTemplate?=null
+    open var mongoTemplate: MongoTemplate?=null
 
     @Autowired
-    val sequenceDao: SequenceDao?=null
+    open var sequenceDao: SequenceDao?=null
 
 
     override fun findOne(id: Long): VirtualUser? {
@@ -54,7 +54,7 @@ open class UserRepositoryImpl : UserRepository {
     }
 
 
-    private fun exists(id:Long):Boolean{
+    open  fun exists(id:Long):Boolean{
 
        return  mongoTemplate?.exists(Query.query(where("_id").`is`(id)),VirtualUser::class.java)!!
     }

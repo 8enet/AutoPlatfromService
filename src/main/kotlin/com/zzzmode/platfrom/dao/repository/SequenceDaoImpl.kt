@@ -28,7 +28,8 @@ open class SequenceDaoImpl : SequenceDao {
     }
 
     @Autowired
-    val mongoOperations: MongoOperations?=null
+    open var mongoOperations: MongoOperations?=null
+
 
     override fun getNextSequenceId(key: String): Long {
 
