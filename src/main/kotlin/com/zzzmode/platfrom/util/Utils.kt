@@ -78,6 +78,11 @@ fun <T> invokAll(callables: List<Callable<T>>):T?{
     return  sExecutor.invokeAny(callables)
 }
 
+/**
+ * 新建一个线程池,需要手动关闭
+ * @param poolName 线程池名称
+ * @param taskSize 任务数量
+ */
 fun newTemporaryExecutor(poolName:String,taskSize:Int): ExecutorService? {
     var service:ExecutorService?=null
     if(taskSize > 5){

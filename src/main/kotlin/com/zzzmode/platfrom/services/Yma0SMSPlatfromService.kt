@@ -22,6 +22,8 @@ open class Yma0SMSPlatfromService {
 
     companion object {
 
+        private  val apiServer: String="http://api.yma0.com/http.aspx"
+
         private val logger = LoggerFactory.getLogger(Yma0SMSPlatfromService::class.java)
 
         private val regx_getMobileNum= Pattern.compile("^\\d{11}").toRegex()
@@ -62,9 +64,6 @@ open class Yma0SMSPlatfromService {
         @Bean
         get() = HttpUrl.parse(apiServer)
 
-    @Value("\${yma0_api}")
-    val apiServer: String? = null
-
 
     @Value("\${yma0_uid}")
     val uid: String? = null
@@ -79,7 +78,7 @@ open class Yma0SMSPlatfromService {
 
     @PostConstruct
     fun doLogin(){
-        logger.info("uid:${uid},pwd:${pwd},pid:${projectId}")
+
         async() {
             getToken()
         }
@@ -95,9 +94,13 @@ open class Yma0SMSPlatfromService {
 
                         token = this.split("\\|".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                     }
-                    logger.info("------------------------")
-                    logger.info("getToken token " + token)
-                    logger.info("------------------------")
+                    val u=userInfo
+                    logger.info("---------------------------------")
+                    logger.info("uid:${uid},pwd:${pwd},pid:${projectId}")
+                    logger.info("yma0 token " + token)
+                    logger.info(u)
+                    logger.info("---------------------------------")
+
                 }
             }
         }
@@ -310,6 +313,7 @@ open class Yma0SMSPlatfromService {
 
     val userInfo: String?
         get() {
+            //用户名;积分;余额;可同时获取号码数
             val request = Request.Builder().get().url(baseBuilder("getUserInfos").build()).build()
             return HttpRequestClient.request(request)
         }

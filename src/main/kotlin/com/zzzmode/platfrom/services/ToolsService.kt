@@ -1,14 +1,15 @@
 package com.zzzmode.platfrom.services
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.zzzmode.platfrom.bean.IPAddress
 import com.zzzmode.platfrom.bean.MobileNumberAddress
+import com.zzzmode.platfrom.config.ThirdPartyApiConfigure
+import com.zzzmode.platfrom.config.ThirdPartyApiConfigure.ApiServerAddress
 import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.exception.PlatfromServiceException
 import com.zzzmode.platfrom.http.HttpRequestClient
-import com.zzzmode.platfrom.http.response.BaiduPlaceResp
-import com.zzzmode.platfrom.http.response.IPAddressBaiduResp
-import com.zzzmode.platfrom.http.response.IPAddressTaobaoResp
-import com.zzzmode.platfrom.http.response.MobileNumberAddressResp
+import com.zzzmode.platfrom.http.response.*
 import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.util.newTemporaryExecutor
 import okhttp3.FormBody
@@ -16,7 +17,7 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 import java.net.InetSocketAddress
@@ -42,17 +43,12 @@ class ToolsService{
         private val RANDOM=Random()
     }
 
+    @Autowired
+    private val apiConfigure:ThirdPartyApiConfigure?=null
+
+
+
     /********      ip地址    **/
-
-    @Value("\${apikey}")
-    val apikey: String ? = null
-
-    @Value("\${ip_address_api_taobao}")
-    val apiTBServer: String ? = null
-
-    @Value("\${ip_address_api_baidu}")
-    val apiBDServer: String ? = null
-
 
     /**
      * 查询ip地址
@@ -61,7 +57,6 @@ class ToolsService{
         if(!isIpAddress(ip)){
             throw PlatfromServiceException("ip address illegal!",2)
         }
-
 
         //先用淘宝
         getIpTaobao(ip)?.apply {
@@ -89,7 +84,7 @@ class ToolsService{
     private fun getIpTaobao(ip:String): IPAddress?{
 
         val request = Request.Builder().get()
-                .url(apiTBServer?.format(ip))
+                .url(ApiServerAddress.taobao_ip_address_api+ip)
                 .build()
 
         HttpRequestClient.request(request)?.apply {
@@ -102,8 +97,8 @@ class ToolsService{
     private fun getIpBaidu(ip:String): IPAddress?{
         val request = Request.Builder()
                 .get()
-                .url(apiBDServer?.format(ip))
-                .addHeader("apikey", apikey)
+                .url(ApiServerAddress.baidu_ip_address_api+ip)
+                .addHeader("apikey", apiConfigure?.baiduApiKeyHandler?.getKey())
                 .build()
 
         HttpRequestClient.request(request)?.apply {
@@ -122,11 +117,6 @@ class ToolsService{
     /**  手机号归属地查询服务 **/
 
 
-    @Value("\${mobile_number_address_api}")
-    val apiServer: String ? = null
-
-    @Value("\${mobile_number_address_api_paipai}")
-    val paipaiServer: String? = null
 
     /**
      * 查询手机号归属地
@@ -137,12 +127,19 @@ class ToolsService{
         }
 
         queryBybd(phone)?.apply {
+            if(!"-".equals(city)){
+                return this
+            }
+
+        }
+
+        queryByTenpay(phone)?.apply {
             return this
         }
 
-        queryBypp(phone)?.apply {
-            return this
-        }
+//        queryBypp(phone)?.apply {
+//            return this
+//        }
         return null
     }
 
@@ -155,11 +152,11 @@ class ToolsService{
 
     //百度接口
     private fun queryBybd(phone: String): MobileNumberAddress? {
-        if (apikey == null) {
+        if (apiConfigure?.baiduApiKeyHandler?.getKey() == null) {
             throw RuntimeException("apikey may be not null !!!")
         }
 
-        val request = Request.Builder().get().url(apiServer?.format(phone)).addHeader("apikey", apikey).build()
+        val request = Request.Builder().get().url(ApiServerAddress.baidu_mobile_number_address_api+ phone).addHeader("apikey", apiConfigure?.baiduApiKeyHandler?.getKey()).build()
 
         HttpRequestClient.request(request)?.apply {
             return JsonKit.gson.fromJson(this, MobileNumberAddressResp::class.java)?.mobileNumberAddress
@@ -168,20 +165,16 @@ class ToolsService{
         return null
     }
 
-    //拍拍接口
-    private fun queryBypp(phone: String): MobileNumberAddress? {
-        val request = Request.Builder().get().url(paipaiServer?.format(phone)).build()
+    private fun queryByTenpay(phone: String):MobileNumberAddress?{
+        val request = Request.Builder().get().url(ApiServerAddress.tenpay_mobile_number_address_api+phone).build()
 
-        HttpRequestClient.request(request)?.apply {
-
-            var st: Int? = indexOf('(')
-            var et = lastIndexOf(')')
-            if (st != -1 && et != -1) {
-                val json = substring(st!! + 1, et).replace('\'', '"')
-
-                return JsonKit.gson.fromJson(json, MobileNumberAddress::class.java)
+        HttpRequestClient.request(request,charset="gb2312")?.apply {
+            try {
+                val mapper= XmlMapper()
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false)
+                return mapper.readValue(this,MobileNumberAddress::class.java)
+            } catch(e: Exception) {
             }
-
         }
         return null
     }
@@ -189,24 +182,39 @@ class ToolsService{
 
     /**  真实地址生成 **/
 
-    @Value("\${address_api_server}")
-    val addressSearchServer:String?=null
 
-    @Value("\${baidu_ak}")
-    val baidu_ak:String?=null
 
     /**
      * 随机生成真实地址
      */
     fun getAddress(province:String?,city:String?):String{
-        if(baidu_ak == null){
+
+        getAddress_Baidu(province,city)?.apply {
+            return this
+        }
+
+        getAddress_amap(province,city)?.apply {
+            return this
+        }
+
+        return ""
+    }
+
+    //百度地图地址提取
+    private fun getAddress_Baidu(province:String?,city:String?,retry:Int=5):String?{
+        if(apiConfigure?.baiduMapAkHandler?.getKey() == null){
             logger.error("baidu map api ak is null !")
-            return ""
+            return null
+        }
+
+        if(retry == 0){
+            logger.warn("getAddress_Baidu fail,province:${province},city:${city},too many times to retry")
+            return null
         }
 
         var randomAD=randomAddress()
-        val url = HttpUrl.parse(addressSearchServer).newBuilder()
-                .addQueryParameter("ak", baidu_ak)
+        val url = HttpUrl.parse(ApiServerAddress.baidu_map_api).newBuilder()
+                .addQueryParameter("ak", apiConfigure?.baiduMapAkHandler?.getKey())
                 .addQueryParameter("city_limit", "true")
                 .addQueryParameter("output", "json")
                 .addQueryParameter("region", if(StringUtils.isEmpty(city)) province else city )
@@ -217,6 +225,7 @@ class ToolsService{
         HttpRequestClient.request(request)?.apply {
             JsonKit.gson.fromJson(this, BaiduPlaceResp::class.java)?.apply {
                 if(status == 4 || status >= 300){
+                    apiConfigure?.baiduMapAkHandler?.invalidKey()
                     //当前key配额用完了
                     logger.error("please change baidu map apikey!")
                 }
@@ -235,7 +244,74 @@ class ToolsService{
                 }
             }
         }
-        return getAddress(province,city)
+        return getAddress_Baidu(province,city,retry-1)
+    }
+
+
+    //高德地图地址提取
+    private fun getAddress_amap(province:String?,city:String?,retry:Int=5):String?{
+        if(apiConfigure?.amapApiKeyHandler?.getKey() == null){
+            logger.error("amap  api ak is null !")
+            return null
+        }
+
+        if(retry == 0){
+            logger.warn("getAddress_amap fail,province:${province},city:${city},too many times to retry")
+            return null
+        }
+
+        var randomAD=randomAddress()
+        val url = HttpUrl.parse(ApiServerAddress.amap_map_api).newBuilder()
+                .addQueryParameter("key", apiConfigure?.amapApiKeyHandler?.getKey())
+                .addQueryParameter("city_limit", "true")
+                .addQueryParameter("output", "json")
+                .addQueryParameter("city", if(StringUtils.isEmpty(city)) province else city )
+                .addQueryParameter("keywords", randomAD)
+                .build()
+        val request = Request.Builder().get().url(url).build()
+        HttpRequestClient.request(request)?.apply {
+            JsonKit.gson.fromJson(this, AmapPlcaeResp::class.java)?.apply {
+                if("10003".equals(infocode)){
+                    apiConfigure?.amapApiKeyHandler?.invalidKey()
+                    //当前key配额用完了
+                    logger.error("please change baidu map apikey!")
+                }
+
+                addressDatas?.run {
+                    forEach {
+                        it.name?.run {
+                            if(contains(randomAD)){
+                                return  excludeRepeatName(it.pname,it.cityname,it.adname,this)
+                            }
+                        }
+
+                        it.address?.run {
+                            if(contains(randomAD)){
+
+                                return  excludeRepeatName(it.pname,it.cityname,it.adname,this)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return getAddress_amap(province,city,retry-1)
+    }
+
+    private fun excludeRepeatName(p:String?,c:String?,ad:String?,address:String?):String?{
+        if(p.isNullOrEmpty()){
+            return p+c+ad+address;
+        }
+
+        c?.apply {
+            if(contains(p!!)){
+                return p+ad+address
+            }else{
+                return p+c+ad+address;
+            }
+        }
+
+        return p+c+ad+address;
     }
 
 
@@ -380,7 +456,6 @@ class ToolsService{
                 //e.printStackTrace()
             }finally{
                  executor!!.shutdownNow()
-
             }
         }
         return null

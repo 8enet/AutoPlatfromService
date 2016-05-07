@@ -31,13 +31,18 @@ object HttpRequestClient {
     private val logger = LoggerFactory.getLogger(HttpRequestClient::class.java)
 
 
-    fun request(request: Request,httpClient : OkHttpClient=defaultClient): String? {
+    fun request(request: Request,httpClient : OkHttpClient=defaultClient,charset:String?=null): String? {
         var response:Response?=null
         try {
             response=httpClient.newCall(request).execute()
 
             if(response.isSuccessful){
-                return response.body()?.string()
+                if(charset.isNullOrEmpty()){
+                    return response?.body()?.string()
+                }else{
+                    return response?.body()?.source()?.readString(charset(charset!!))
+                }
+
             }
         } catch(e: Exception) {
             try {

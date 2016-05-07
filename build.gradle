@@ -67,6 +67,8 @@ dependencies {
     compile 'org.seleniumhq.selenium:selenium-api:2.52.0'
     compile 'org.jsoup:jsoup:1.8.3'
 
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.6.5'
+
     optional 'org.springframework.boot:spring-boot-configuration-processor'
 
 }
