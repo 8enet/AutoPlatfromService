@@ -17,8 +17,8 @@ import java.io.IOException
 abstract  class LianZhongCaptchaRecognize : AbsCaptchaRecognize() {
     companion object{
 
-        private val API_SERVER="http://bbb4.hyslt.com/api.php?mod=php&act=upload"
-        private val API_ERROR_REPORT="http://bbb4.hyslt.com/api.php?mod=php&act=error"
+        private const val API_SERVER="http://bbb4.hyslt.com/api.php?mod=php&act=upload"
+        private const val API_ERROR_REPORT="http://bbb4.hyslt.com/api.php?mod=php&act=error"
         private val logger=LoggerFactory.getLogger(LianZhongCaptchaRecognize::class.java)
     }
 
