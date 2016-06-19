@@ -14,6 +14,7 @@ class OrderModel {
             const val TOOLS="tools"     //工具
             const val USER="user"       //用户
             const val CAPTCHA="captcha" //验证码模块
+            const val SMS="sms"         //短信模块
         }
 
     }
@@ -25,6 +26,7 @@ class OrderModel {
             const val DELETE="delete"
             const val UPDATE="update"
             const val GET="get"
+            const val SEND="send"
         }
     }
 

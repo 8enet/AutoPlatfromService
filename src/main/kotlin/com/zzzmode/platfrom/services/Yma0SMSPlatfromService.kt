@@ -15,6 +15,7 @@ import java.util.regex.Pattern
 import javax.annotation.PostConstruct
 
 /**
+ * sms平台
  * Created by zl on 16/2/17.
  */
 @Service
@@ -257,7 +258,7 @@ open class Yma0SMSPlatfromService {
      * @param recv 接收号码
      * @param content 短信内容
      */
-    fun sendSms(number: String,recv:String,content:String,retry: Int=3){
+    fun sendSms(number: String,recv:String,content:String="",retry: Int=3){
         if(retry == 0){
             logger.error("sendSms fail,number:${number},recv:${recv},content:${content},too many times to retry")
             return

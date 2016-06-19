@@ -2,14 +2,17 @@ package com.zzzmode.platfrom.controller
 
 import com.zzzmode.platfrom.dto.OrderModel
 import com.zzzmode.platfrom.dto.ResponseModel
+import com.zzzmode.platfrom.dto.SMSInfo
 import com.zzzmode.platfrom.dto.VirtualUser
 import com.zzzmode.platfrom.services.CaptchaRecognizeService
 import com.zzzmode.platfrom.services.manager.OnlineUserManager
 import com.zzzmode.platfrom.services.ToolsService
 import com.zzzmode.platfrom.services.UserService
+import com.zzzmode.platfrom.services.Yma0SMSPlatfromService
 import com.zzzmode.platfrom.util.JsonKit
 import com.zzzmode.platfrom.util.isNotNull
 import com.zzzmode.platfrom.util.isNull
+import com.zzzmode.platfrom.websocket.getUser
 import com.zzzmode.platfrom.websocket.setUser
 import com.zzzmode.platfrom.websocket.setUserProxyPort
 import org.slf4j.LoggerFactory
@@ -48,6 +51,8 @@ class WSController {
     @Autowired
     var onlineUserManager: OnlineUserManager?=null
 
+    @Autowired
+    var smsService:Yma0SMSPlatfromService?=null
 
     fun onRecvAction(orderModel: OrderModel?,session: WebSocketSession?){
         orderModel?.module?.apply {
@@ -56,6 +61,7 @@ class WSController {
                 OrderModel.Module.TOOLS -> toolsQuery(orderModel,session)
                 OrderModel.Module.USER  -> user(orderModel,session)
                 OrderModel.Module.CAPTCHA -> captcha(orderModel,session)
+                OrderModel.Module.SMS -> smsPlatform(orderModel,session)
                 else -> logger.warn("unkonw model:${orderModel}")
             }
         }
@@ -197,4 +203,50 @@ class WSController {
     }
 
     /**  captcha end **/
+
+
+    /**   sms platform */
+
+    private fun smsPlatform(orderModel: OrderModel,session: WebSocketSession?){
+
+        session?.getUser()?.apply {
+            var resp=ResponseModel<SMSInfo>()
+            when(orderModel.action){
+                OrderModel.Action.GET ->
+                    resp=recvSMS(orderModel,this)
+                OrderModel.Action.SEND ->
+                    resp=sendSMS(orderModel,this)
+            }
+            session?.sendMessage(TextMessage(JsonKit.gson.toJson(resp)))
+        }
+
+    }
+
+    private fun recvSMS(orderModel: OrderModel,user:VirtualUser):ResponseModel<SMSInfo>{
+        val sendPhone=user.phone
+        if(!sendPhone.isNullOrEmpty()){
+            smsService?.getVcodeAndReleaseMobile(sendPhone!!)?.apply {
+                return ResponseModel<SMSInfo>(true,null,SMSInfo(null,sendPhone,this))
+            }
+        }
+        return ResponseModel<SMSInfo>(false,"sendPhone ${sendPhone},recv sms fail!",null)
+    }
+
+    private fun sendSMS(orderModel: OrderModel,user:VirtualUser):ResponseModel<SMSInfo>{
+       val recvPhone= orderModel.params.get("recv_phone")
+        val content=orderModel.params.get("content")
+        val sendPhone=user.phone
+        if(!recvPhone.isNullOrEmpty() && !sendPhone.isNullOrEmpty()){
+            if(content.isNullOrEmpty()){
+                smsService?.sendSms(sendPhone!!,recvPhone!!)
+            }else{
+                smsService?.sendSms(sendPhone!!,recvPhone!!,content!!)
+            }
+           return ResponseModel<SMSInfo>(true,null,SMSInfo(recvPhone,sendPhone,content))
+        }
+        return ResponseModel<SMSInfo>(false,"recvPhone:${recvPhone} or sendPhone ${sendPhone} error",null)
+    }
+
+
+    /**   sms platform  end */
 }
